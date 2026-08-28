@@ -4,8 +4,6 @@ use crate::error::Error;
 use crate::StringWrapper;
 use crate::APP;
 use log::{error, info};
-use serde_json::{json, Value};
-use std::io::Read;
 use tauri::Manager;
 
 #[tauri::command]
@@ -125,86 +123,6 @@ pub fn unset_proxy() -> Result<bool, ()> {
     std::env::remove_var("all_proxy");
     std::env::remove_var("no_proxy");
     Ok(true)
-}
-
-#[tauri::command]
-pub fn install_plugin(path_list: Vec<String>) -> Result<i32, Error> {
-    let mut success_count = 0;
-
-    for path in path_list {
-        if !path.ends_with("potext") {
-            continue;
-        }
-        let path = std::path::Path::new(&path);
-        let file_name = path.file_name().unwrap().to_str().unwrap();
-        let file_name = file_name.replace(".potext", "");
-        if !file_name.starts_with("plugin") {
-            return Err(Error::Error(
-                "Invalid Plugin: file name must start with plugin".into(),
-            ));
-        }
-
-        let mut zip = zip::ZipArchive::new(std::fs::File::open(path)?)?;
-        #[allow(unused_mut)]
-        let mut plugin_type: String;
-        if let Ok(mut info) = zip.by_name("info.json") {
-            let mut content = String::new();
-            info.read_to_string(&mut content)?;
-            let json: serde_json::Value = serde_json::from_str(&content)?;
-            plugin_type = json["plugin_type"]
-                .as_str()
-                .ok_or(Error::Error("can't find plugin type in info.json".into()))?
-                .to_string();
-        } else {
-            return Err(Error::Error("Invalid Plugin: miss info.json".into()));
-        }
-        if zip.by_name("main.js").is_err() {
-            return Err(Error::Error("Invalid Plugin: miss main.js".into()));
-        }
-        let config_path = dirs::config_dir().unwrap();
-        let config_path =
-            config_path.join(APP.get().unwrap().config().tauri.bundle.identifier.clone());
-        let config_path = config_path.join("plugins");
-        let config_path = config_path.join(plugin_type);
-        let plugin_path = config_path.join(file_name);
-        std::fs::create_dir_all(&config_path)?;
-        zip.extract(&plugin_path)?;
-
-        success_count += 1;
-    }
-    Ok(success_count)
-}
-
-#[tauri::command]
-pub fn run_binary(
-    plugin_type: String,
-    plugin_name: String,
-    cmd_name: String,
-    args: Vec<String>,
-) -> Result<Value, Error> {
-    #[cfg(target_os = "windows")]
-    use std::os::windows::process::CommandExt;
-    use std::process::Command;
-
-    let config_path = dirs::config_dir().unwrap();
-    let config_path = config_path.join(APP.get().unwrap().config().tauri.bundle.identifier.clone());
-    let config_path = config_path.join("plugins");
-    let config_path = config_path.join(plugin_type);
-    let plugin_path = config_path.join(plugin_name);
-
-    #[cfg(target_os = "windows")]
-    let mut cmd = Command::new(&cmd_name);
-    #[cfg(target_os = "windows")]
-    let cmd = cmd.creation_flags(0x08000000);
-    #[cfg(not(target_os = "windows"))]
-    let mut cmd = Command::new(&cmd_name);
-
-    let output = cmd.args(args).current_dir(plugin_path).output()?;
-    Ok(json!({
-        "stdout": String::from_utf8_lossy(&output.stdout).to_string(),
-        "stderr": String::from_utf8_lossy(&output.stderr).to_string(),
-        "status": output.status.code().unwrap_or(-1),
-    }))
 }
 
 #[tauri::command]

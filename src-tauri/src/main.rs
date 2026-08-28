@@ -136,7 +136,6 @@ fn main() {
             system_ocr,
             set_proxy,
             unset_proxy,
-            run_binary,
             open_devtools,
             register_shortcut_by_frontend,
             update_tray,
@@ -145,7 +144,6 @@ fn main() {
             lang_detect,
             webdav,
             local,
-            install_plugin,
             font_list,
             aliyun
         ])

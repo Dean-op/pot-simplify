@@ -1,8 +1,5 @@
-import { readDir, BaseDirectory, readTextFile, exists } from '@tauri-apps/api/fs';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { appWindow, currentMonitor } from '@tauri-apps/api/window';
-import { appConfigDir, join } from '@tauri-apps/api/path';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { Spacer, Button } from '@nextui-org/react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import React, { useState, useEffect } from 'react';
@@ -75,7 +72,6 @@ export default function Translate() {
     const [recognizeServiceInstanceList] = useConfig('recognize_service_list', ['system']);
     const [hideLanguage] = useConfig('hide_language', false);
     const [pined, setPined] = useState(false);
-    const [pluginList, setPluginList] = useState(null);
     const [serviceInstanceConfigMap, setServiceInstanceConfigMap] = useState(null);
     const reorder = (list, startIndex, endIndex) => {
         const result = Array.from(list);
@@ -156,40 +152,6 @@ export default function Translate() {
         }
     }, [rememberWindowSize]);
 
-    const loadPluginList = async () => {
-        const serviceTypeList = ['translate', 'recognize'];
-        let temp = {};
-        for (const serviceType of serviceTypeList) {
-            temp[serviceType] = {};
-            if (await exists(`plugins/${serviceType}`, { dir: BaseDirectory.AppConfig })) {
-                const plugins = await readDir(`plugins/${serviceType}`, { dir: BaseDirectory.AppConfig });
-                for (const plugin of plugins) {
-                    const infoStr = await readTextFile(`plugins/${serviceType}/${plugin.name}/info.json`, {
-                        dir: BaseDirectory.AppConfig,
-                    });
-                    let pluginInfo = JSON.parse(infoStr);
-                    if ('icon' in pluginInfo) {
-                        const appConfigDirPath = await appConfigDir();
-                        const iconPath = await join(
-                            appConfigDirPath,
-                            `/plugins/${serviceType}/${plugin.name}/${pluginInfo.icon}`
-                        );
-                        pluginInfo.icon = convertFileSrc(iconPath);
-                    }
-                    temp[serviceType][plugin.name] = pluginInfo;
-                }
-            }
-        }
-        setPluginList({ ...temp });
-    };
-
-    useEffect(() => {
-        loadPluginList();
-        if (!unlisten) {
-            unlisten = listen('reload_plugin_list', loadPluginList);
-        }
-    }, []);
-
     const loadServiceInstanceConfigMap = async () => {
         const config = {};
         for (const serviceInstanceKey of translateServiceInstanceList) {
@@ -207,117 +169,111 @@ export default function Translate() {
     }, [translateServiceInstanceList, recognizeServiceInstanceList]);
 
     return (
-        pluginList && (
+        <div
+            className={`bg-background h-screen w-screen ${
+                osType === 'Linux' && 'rounded-[10px] border-1 border-default-100'
+            }`}
+        >
             <div
-                className={`bg-background h-screen w-screen ${
-                    osType === 'Linux' && 'rounded-[10px] border-1 border-default-100'
-                }`}
-            >
-                <div
-                    className='fixed top-[5px] left-[5px] right-[5px] h-[30px]'
-                    data-tauri-drag-region='true'
-                />
-                <div className={`h-[35px] w-full flex ${osType === 'Darwin' ? 'justify-end' : 'justify-between'}`}>
-                    <Button
-                        isIconOnly
-                        size='sm'
-                        variant='flat'
-                        disableAnimation
-                        className='my-auto bg-transparent'
-                        onPress={() => {
-                            if (pined) {
-                                if (closeOnBlur) {
-                                    unlisten = listenBlur();
-                                }
-                                appWindow.setAlwaysOnTop(false);
-                            } else {
-                                unlistenBlur();
-                                appWindow.setAlwaysOnTop(true);
+                className='fixed top-[5px] left-[5px] right-[5px] h-[30px]'
+                data-tauri-drag-region='true'
+            />
+            <div className={`h-[35px] w-full flex ${osType === 'Darwin' ? 'justify-end' : 'justify-between'}`}>
+                <Button
+                    isIconOnly
+                    size='sm'
+                    variant='flat'
+                    disableAnimation
+                    className='my-auto bg-transparent'
+                    onPress={() => {
+                        if (pined) {
+                            if (closeOnBlur) {
+                                unlisten = listenBlur();
                             }
-                            setPined(!pined);
-                        }}
-                    >
-                        <BsPinFill className={`text-[20px] ${pined ? 'text-primary' : 'text-default-400'}`} />
-                    </Button>
-                    <Button
-                        isIconOnly
-                        size='sm'
-                        variant='flat'
-                        disableAnimation
-                        className={`my-auto ${osType === 'Darwin' && 'hidden'} bg-transparent`}
-                        onPress={() => {
-                            void appWindow.close();
-                        }}
-                    >
-                        <AiFillCloseCircle className='text-[20px] text-default-400' />
-                    </Button>
-                </div>
-                <div className={`${osType === 'Linux' ? 'h-[calc(100vh-37px)]' : 'h-[calc(100vh-35px)]'} px-[8px]`}>
-                    <div className='h-full overflow-y-auto'>
-                        <div>
-                            {serviceInstanceConfigMap !== null && (
-                                <SourceArea
-                                    pluginList={pluginList}
-                                    serviceInstanceConfigMap={serviceInstanceConfigMap}
-                                />
-                            )}
-                        </div>
-                        <div className={`${hideLanguage && 'hidden'}`}>
-                            <LanguageArea />
-                            <Spacer y={2} />
-                        </div>
-                        <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable
-                                droppableId='droppable'
-                                direction='vertical'
-                            >
-                                {(provided) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        {...provided.droppableProps}
-                                    >
-                                        {translateServiceInstanceList !== null &&
-                                            serviceInstanceConfigMap !== null &&
-                                            translateServiceInstanceList.map((serviceInstanceKey, index) => {
-                                                const config = serviceInstanceConfigMap[serviceInstanceKey] ?? {};
-                                                const enable = config['enable'] ?? true;
-
-                                                return enable ? (
-                                                    <Draggable
-                                                        key={serviceInstanceKey}
-                                                        draggableId={serviceInstanceKey}
-                                                        index={index}
-                                                    >
-                                                        {(provided) => (
-                                                            <div
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                            >
-                                                                <TargetArea
-                                                                    {...provided.dragHandleProps}
-                                                                    index={index}
-                                                                    name={serviceInstanceKey}
-                                                                    translateServiceInstanceList={
-                                                                        translateServiceInstanceList
-                                                                    }
-                                                                    pluginList={pluginList}
-                                                                    serviceInstanceConfigMap={serviceInstanceConfigMap}
-                                                                />
-                                                                <Spacer y={2} />
-                                                            </div>
-                                                        )}
-                                                    </Draggable>
-                                                ) : (
-                                                    <></>
-                                                );
-                                            })}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                            appWindow.setAlwaysOnTop(false);
+                        } else {
+                            unlistenBlur();
+                            appWindow.setAlwaysOnTop(true);
+                        }
+                        setPined(!pined);
+                    }}
+                >
+                    <BsPinFill className={`text-[20px] ${pined ? 'text-primary' : 'text-default-400'}`} />
+                </Button>
+                <Button
+                    isIconOnly
+                    size='sm'
+                    variant='flat'
+                    disableAnimation
+                    className={`my-auto ${osType === 'Darwin' && 'hidden'} bg-transparent`}
+                    onPress={() => {
+                        void appWindow.close();
+                    }}
+                >
+                    <AiFillCloseCircle className='text-[20px] text-default-400' />
+                </Button>
+            </div>
+            <div className={`${osType === 'Linux' ? 'h-[calc(100vh-37px)]' : 'h-[calc(100vh-35px)]'} px-[8px]`}>
+                <div className='h-full overflow-y-auto'>
+                    <div>
+                        {serviceInstanceConfigMap !== null && (
+                            <SourceArea serviceInstanceConfigMap={serviceInstanceConfigMap} />
+                        )}
                     </div>
+                    <div className={`${hideLanguage && 'hidden'}`}>
+                        <LanguageArea />
+                        <Spacer y={2} />
+                    </div>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable
+                            droppableId='droppable'
+                            direction='vertical'
+                        >
+                            {(provided) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                >
+                                    {translateServiceInstanceList !== null &&
+                                        serviceInstanceConfigMap !== null &&
+                                        translateServiceInstanceList.map((serviceInstanceKey, index) => {
+                                            const config = serviceInstanceConfigMap[serviceInstanceKey] ?? {};
+                                            const enable = config['enable'] ?? true;
+
+                                            return enable ? (
+                                                <Draggable
+                                                    key={serviceInstanceKey}
+                                                    draggableId={serviceInstanceKey}
+                                                    index={index}
+                                                >
+                                                    {(provided) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                        >
+                                                            <TargetArea
+                                                                {...provided.dragHandleProps}
+                                                                index={index}
+                                                                name={serviceInstanceKey}
+                                                                translateServiceInstanceList={
+                                                                    translateServiceInstanceList
+                                                                }
+                                                                serviceInstanceConfigMap={serviceInstanceConfigMap}
+                                                            />
+                                                            <Spacer y={2} />
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ) : (
+                                                <></>
+                                            );
+                                        })}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
                 </div>
             </div>
-        )
+        </div>
     );
 }

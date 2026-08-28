@@ -5,20 +5,13 @@ import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 
 import { useToastStyle } from '../../../../../hooks';
-import SelectPluginModal from '../SelectPluginModal';
 import { osType } from '../../../../../utils/env';
 import { useConfig, deleteKey } from '../../../../../hooks';
 import ServiceItem from './ServiceItem';
 import SelectModal from './SelectModal';
 import ConfigModal from './ConfigModal';
 
-export default function Recognize(props) {
-    const { pluginList } = props;
-    const {
-        isOpen: isSelectPluginOpen,
-        onOpen: onSelectPluginOpen,
-        onOpenChange: onSelectPluginOpenChange,
-    } = useDisclosure();
+export default function Recognize() {
     const { isOpen: isSelectOpen, onOpen: onSelectOpen, onOpenChange: onSelectOpenChange } = useDisclosure();
     const { isOpen: isConfigOpen, onOpen: onConfigOpen, onOpenChange: onConfigOpenChange } = useDisclosure();
     const [currentConfigKey, setCurrentConfigKey] = useState('system');
@@ -97,7 +90,6 @@ export default function Recognize(props) {
                                                                 {...provided.dragHandleProps}
                                                                 serviceInstanceKey={x}
                                                                 key={x}
-                                                                pluginList={pluginList}
                                                                 deleteServiceInstance={deleteServiceInstance}
                                                                 setCurrentConfigKey={setCurrentConfigKey}
                                                                 onConfigOpen={onConfigOpen}
@@ -114,31 +106,13 @@ export default function Recognize(props) {
                     </Droppable>
                 </DragDropContext>
                 <Spacer y={2} />
-                <div className='flex'>
-                    <Button
-                        fullWidth
-                        onPress={onSelectOpen}
-                    >
-                        {t('config.service.add_builtin_service')}
-                    </Button>
-                    <Spacer x={2} />
-                    <Button
-                        fullWidth
-                        onPress={onSelectPluginOpen}
-                    >
-                        {t('config.service.add_external_service')}
-                    </Button>
-                </div>
+                <Button
+                    fullWidth
+                    onPress={onSelectOpen}
+                >
+                    {t('config.service.add_builtin_service')}
+                </Button>
             </Card>
-            <SelectPluginModal
-                isOpen={isSelectPluginOpen}
-                onOpenChange={onSelectPluginOpenChange}
-                setCurrentConfigKey={setCurrentConfigKey}
-                onConfigOpen={onConfigOpen}
-                pluginType='recognize'
-                pluginList={pluginList}
-                deleteService={deleteServiceInstance}
-            />
             <SelectModal
                 isOpen={isSelectOpen}
                 onOpenChange={onSelectOpenChange}
@@ -148,7 +122,6 @@ export default function Recognize(props) {
             <ConfigModal
                 serviceInstanceKey={currentConfigKey}
                 isOpen={isConfigOpen}
-                pluginList={pluginList}
                 onOpenChange={onConfigOpenChange}
                 updateServiceInstanceList={updateServiceInstanceList}
             />

@@ -26,22 +26,12 @@ pub fn init_config(app: &mut tauri::App) {
     let _ = check_service_available();
 }
 
-fn check_available(list: Vec<String>, builtin: Vec<&str>, plugin: Vec<String>, key: &str) {
+fn check_available(list: Vec<String>, builtin: Vec<&str>, key: &str) {
     let origin_length = list.len();
     let mut new_list = list.clone();
     for service in list {
         let name = service.split("@").collect::<Vec<&str>>()[0];
-        let mut is_available = true;
-        if name.starts_with("plugin") {
-            if !plugin.contains(&name.to_string()) {
-                is_available = false;
-            }
-        } else {
-            if !builtin.contains(&name) {
-                is_available = false;
-            }
-        }
-        if !is_available {
+        if !builtin.contains(&name) {
             new_list.retain(|x| x != &service);
         }
     }
@@ -59,14 +49,11 @@ pub fn check_service_available() -> Result<(), Error> {
         "cambridge_dict",
         "ecdict",
     ];
-    let plugin_recognize_list: Vec<String> = get_plugin_list("recognize").unwrap_or_default();
-    let plugin_translate_list: Vec<String> = get_plugin_list("translate").unwrap_or_default();
     if let Some(recognize_service_list) = get("recognize_service_list") {
         let recognize_service_list: Vec<String> = serde_json::from_value(recognize_service_list)?;
         check_available(
             recognize_service_list,
             builtin_recognize_list,
-            plugin_recognize_list,
             "recognize_service_list",
         );
     }
@@ -75,39 +62,10 @@ pub fn check_service_available() -> Result<(), Error> {
         check_available(
             translate_service_list,
             builtin_translate_list,
-            plugin_translate_list,
             "translate_service_list",
         );
     }
     Ok(())
-}
-
-pub fn get_plugin_list(plugin_type: &str) -> Option<Vec<String>> {
-    let app_handle = APP.get().unwrap();
-    let config_dir = dirs::config_dir()?;
-    let config_dir = config_dir.join(app_handle.config().tauri.bundle.identifier.clone());
-    let plugin_dir = config_dir.join("plugins");
-    let plugin_dir = plugin_dir.join(plugin_type);
-
-    // dirs in plugin_dir
-    let mut plugin_list = vec![];
-    if plugin_dir.exists() {
-        let read_dir = std::fs::read_dir(plugin_dir).ok()?;
-        for entry in read_dir {
-            let entry = entry.ok()?;
-
-            if entry.path().is_dir() {
-                let name = entry.file_name().to_str()?.to_string();
-                if name.starts_with("plugin") {
-                    plugin_list.push(name);
-                } else {
-                    // Remove old plugin
-                    let _ = std::fs::remove_dir_all(entry.path());
-                }
-            }
-        }
-    }
-    Some(plugin_list)
 }
 
 pub fn get(key: &str) -> Option<Value> {
