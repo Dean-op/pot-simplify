@@ -5,8 +5,6 @@
             "cancel": "取消",
             "save": "保存",
             "write_clipboard": "写入剪贴板",
-            "plugin": "插件",
-            "coming": "敬请期待…",
             "clear": "清空"
         },
         "languages": {
@@ -47,9 +45,6 @@
                 "label": "常规设置",
                 "title": "常规设置",
                 "auto_start": "开机时启动应用",
-                "check_update": "启动时检查更新",
-                "server_port": "监听端口",
-                "server_port_change": "监听端口已更改，重启应用生效",
                 "app_language": "显示语言",
                 "app_theme": "应用主题",
                 "app_font": "字体",
@@ -102,7 +97,6 @@
                 "target": "译文",
                 "source_target": "原文+译文",
                 "disable": "禁用",
-                "history_disable": "禁用历史记录",
                 "incremental_translate": "增量翻译",
                 "dynamic_translate": "动态翻译",
                 "delete_newline": "自动删除换行",
@@ -159,108 +153,22 @@
                 "label": "服务设置",
                 "title": "服务设置",
                 "translate": "翻译",
-                "tts": "语音合成",
                 "recognize": "文字识别",
-                "collection": "生词本",
                 "least": "请至少保留一个",
                 "add_builtin_service": "添加内置服务",
-                "add_external_service": "添加外部插件",
                 "add_service": "添加服务",
                 "test_failed": "测试失败",
-                "install_plugin": "安装外部插件",
-                "view_plugin_list": "查看插件列表",
-                "uninstall_success": "插件卸载成功",
                 "homepage": "插件主页"
-            },
-            "history": {
-                "label": "历史记录",
-                "title": "历史记录"
-            },
-            "backup": {
-                "label": "备份设置",
-                "title": "备份设置",
-                "type": "服务类型",
-                "webdav": "WebDav",
-                "local": "本地",
-                "aliyun": "阿里云盘",
-                "webdav_url": "WebDav地址",
-                "username": "用户名",
-                "password": "密码",
-                "logout": "退出登录",
-                "aliyun_login_first": "请先扫码登录",
-                "login_success": "登录成功",
-                "backup": "备份",
-                "restore": "恢复备份",
-                "list": "备份列表",
-                "load_success": "载入备份成功",
-                "backup_success": "备份成功",
-                "empty": "您还没有备份"
-            },
-            "about": {
-                "label": "关于应用",
-                "title": "关于应用",
-                "website": "官网",
-                "github": "GitHub",
-                "feedback": "问题反馈",
-                "issue": "议题",
-                "email": "邮件",
-                "community": "社区交流",
-                "check_update": "检查更新",
-                "view_log": "查看日志",
-                "view_config": "查看配置文件",
-                "qq_channel": "QQ 频道",
-                "qq_group": "QQ 群",
-                "telegram": "Telegram",
-                "discussion": "Github 讨论"
             }
-        },
-        "updater": {
-            "title": "检查更新",
-            "latest": "## 已经是最新版本",
-            "progress": "下载进度",
-            "update": "更新",
-            "downloading": "下载中…",
-            "installing": "安装中…",
-            "cancel": "取消",
-            "installed": "安装完成，重启应用生效"
         },
         "services": {
             "help": "配置指南",
             "no_need": "无需配置",
             "instance_name": "配置名称",
             "translate": {
-                "deepl": {
-                    "title": "DeepL",
-                    "custom_url": "DeepLX 地址",
-                    "auth_key": "API 密钥",
-                    "type": "服务类型",
-                    "free": "内置免费",
-                    "api": "Auth Key",
-                    "deeplx": "DeepLX"
-                },
                 "google": {
                     "title": "谷歌翻译",
                     "custom_url": "自定义 URL"
-                },
-                "lingva": {
-                    "title": "Lingva"
-                },
-                "bing": {
-                    "title": "必应翻译"
-                },
-                "ollama": {
-                    "title": "Ollama",
-                    "install_ollama": "无法连接到本地ollama，请先下载安装并启动ollama，如果您使用不在本机上的ollama，请更改请求地址",
-                    "install_ollama_link": "Ollama 下载地址",
-                    "request_path": "请求地址",
-                    "stream": "流式输出",
-                    "model": "模型",
-                    "install_model": "安装",
-                    "ready": "就绪",
-                    "not_installed": "该模型还未安装，点击立即下载安装",
-                    "supported_models": "点击查看 Ollama 可用模型列表",
-                    "prompt_description": "通过自定义Prompt自定义AI的行为, $text $from $to $detect 将会被替换为 待翻译文本，源语言，目标语言和检测到的语言。",
-                    "add": "添加 Prompt"
                 },
                 "openai": {
                     "title": "OpenAI",
@@ -274,162 +182,19 @@
                     "prompt_description": "通过自定义Prompt自定义OpenAI行为, $text $from $to $detect 将会被替换为 待翻译文本，源语言，目标语言和检测到的语言。",
                     "add": "添加 Prompt"
                 },
-                "geminipro": {
-                    "title": "Gemini Pro",
-                    "request_path": "请求地址",
-                    "api_key": "Api Key",
-                    "stream": "流式输出",
-                    "prompt_description": "通过自定义Prompt自定义Gemini Pro的行为, $text $from $to $detect 将会被替换为 待翻译文本，源语言，目标语言和检测到的语言。",
-                    "add": "添加 Prompt"
-                },
-                "chatglm": {
-                    "title": "智谱 AI",
-                    "model": "模型",
-                    "chatglm_turbo": "ChatGLM Turbo",
-                    "chatglm_pro": "ChatGLM Pro",
-                    "chatglm_std": "ChatGLM Std",
-                    "chatglm_lite": "ChatGLM Lite",
-                    "api_key": "Api Key",
-                    "prompt_description": "通过自定义Prompt自定义AI行为, $text $from $to $detect 将会被替换为 待翻译文本，源语言，目标语言和检测到的语言。",
-                    "add": "添加 Prompt"
-                },
-                "yandex": {
-                    "title": "Yandex"
-                },
                 "ecdict": {
                     "title": "ECDict(在线)"
-                },
-                "transmart": {
-                    "title": "腾讯交互翻译",
-                    "username": "用户名",
-                    "token": "Token"
-                },
-                "baidu": {
-                    "title": "百度翻译",
-                    "appid": "App ID",
-                    "secret": "Secret"
-                },
-                "baidu_field": {
-                    "title": "百度领域翻译",
-                    "it": "信息技术",
-                    "finance": "金融财经",
-                    "machinery": "机械制造",
-                    "senimed": "生物医药",
-                    "novel": "网络文学",
-                    "academic": "学术论文",
-                    "aerospace": "航空航天",
-                    "wiki": "人文社科",
-                    "news": "新闻资讯",
-                    "law": "法律法规",
-                    "contract": "合同"
-                },
-                "alibaba": {
-                    "title": "阿里翻译",
-                    "accesskey_id": "AccessKey ID",
-                    "accesskey_secret": "AccessKey Secret"
-                },
-                "tencent": {
-                    "title": "腾讯翻译",
-                    "secret_id": "Secret ID",
-                    "secret_key": "Secret Key"
-                },
-                "volcengine": {
-                    "title": "火山翻译",
-                    "appid": "App ID",
-                    "secret": "Secret"
-                },
-                "niutrans": {
-                    "title": "小牛翻译",
-                    "https": "使用 Https",
-                    "apikey": "API Key"
-                },
-                "youdao": {
-                    "title": "有道翻译",
-                    "appkey": "App ID",
-                    "key": "Key"
                 },
                 "bing_dict": {
                     "title": "必应词典"
                 },
                 "cambridge_dict": {
                     "title": "剑桥词典"
-                },
-                "caiyun": {
-                    "title": "彩云小译",
-                    "token": "Token"
                 }
             },
             "recognize": {
                 "system": {
                     "title": "系统 OCR"
-                },
-                "tesseract": {
-                    "title": "Tesseract.js"
-                },
-                "baidu_ocr": {
-                    "title": "百度 OCR",
-                    "client_id": "API Key",
-                    "client_secret": "Secret Key"
-                },
-                "baidu_accurate_ocr": {
-                    "title": "百度 OCR (高精度)",
-                    "client_id": "API Key",
-                    "client_secret": "Secret Key"
-                },
-                "baidu_img_ocr": {
-                    "title": "百度图片翻译",
-                    "appid": "App ID",
-                    "secret": "Secret"
-                },
-                "iflytek_ocr": {
-                    "title": "讯飞 OCR",
-                    "appid": "App ID",
-                    "apisecret": "API Secret",
-                    "apikey": "API Key"
-                },
-                "iflytek_intsig_ocr": {
-                    "title": "讯飞 OCR (Intsig)",
-                    "appid": "App ID",
-                    "apisecret": "API Secret",
-                    "apikey": "API Key"
-                },
-                "iflytek_latex_ocr": {
-                    "title": "讯飞公式识别",
-                    "appid": "App ID",
-                    "apisecret": "API Secret",
-                    "apikey": "API Key"
-                },
-                "simple_latex_ocr": {
-                    "title": "Simple LaTeX",
-                    "token": "Token"
-                },
-                "tencent_ocr": {
-                    "title": "腾讯 OCR",
-                    "secret_id": "Secret ID",
-                    "secret_key": "Secret Key"
-                },
-                "tencent_accurate_ocr": {
-                    "title": "腾讯 OCR (高精度)",
-                    "secret_id": "Secret ID",
-                    "secret_key": "Secret Key"
-                },
-                "tencent_img_ocr": {
-                    "title": "腾讯图片翻译",
-                    "secret_id": "Secret ID",
-                    "secret_key": "Secret Key"
-                },
-                "volcengine_ocr": {
-                    "title": "火山 OCR",
-                    "appid": "App ID",
-                    "secret": "Secret"
-                },
-                "volcengine_multi_lang_ocr": {
-                    "title": "火山 OCR (多语言)",
-                    "appid": "App ID",
-                    "secret": "Secret"
-                },
-                "qrcode": {
-                    "title": "二维码识别"
                 },
                 "llm": {
                     "title": "视觉模型 OCR",
@@ -438,23 +203,6 @@
                     "model": "模型",
                     "model_description": "需要支持图片输入的视觉模型（如 Qwen3-VL 系列）。普通文本模型无法识别图片。",
                     "prompt_description": "$lang 会被替换成所选识别语言的英文名称，选择「自动」时为 Auto。"
-                }
-            },
-            "tts": {
-                "lingva_tts": {
-                    "title": "Lingva",
-                    "request_path": "请求地址"
-                }
-            },
-            "collection": {
-                "anki": {
-                    "title": "Anki",
-                    "port": "端口号"
-                },
-                "eudic": {
-                    "title": "欧路词典",
-                    "name": "生词本名称",
-                    "token": "Token"
                 }
             },
             "provider_preset": "提供商预设",
@@ -466,9 +214,6 @@
         },
         "translate": {
             "translate": "翻译",
-            "add_collection_success": "添加成功",
-            "recognizing": "识别中…",
-            "speak": "朗读",
             "copy": "复制",
             "retry": "重试",
             "delete_newline": "删除换行",

@@ -230,7 +230,6 @@ export function Config(props) {
                 >
                     {t('common.save')}
                 </Button>
-
             </form>
         )
     );

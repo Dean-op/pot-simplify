@@ -4,11 +4,7 @@
             "ok": "Ok"
         },
         "services": {
-            "translate": {
-                "lingva": {
-                    "title": "Lingva"
-                }
-            },
+            "translate": {},
             "provider_preset": "Provider Preset",
             "provider_preset_select": "Select Provider",
             "fetch_model_list": "Fetch Model List",

@@ -7,15 +7,6 @@
                 "delete_newline": "改行を削除",
                 "source_language": "ソース言語"
             },
-            "backup": {
-                "title": "バックアップ設定",
-                "label": "バックアップ",
-                "type": "サービスの種類"
-            },
-            "about": {
-                "title": "アプリケーションに関する",
-                "label": "に関する"
-            },
             "general": {
                 "label": "一般設定",
                 "event": {
@@ -47,10 +38,8 @@
                 "app_theme": "テーマ",
                 "auto_start": "自動起動",
                 "proxy_change": "プロキシが変更されました。変更を有効にするためにアプリケーションを再起動してください",
-                "server_port_change": "リスニング・ポートが変更されました。変更を有効にするにはアプリケーションを再起動してください",
                 "app_language": "表示言語",
-                "app_font": "フォント",
-                "server_port": "リスニング・ポート"
+                "app_font": "フォント"
             },
             "hotkey": {
                 "label": "ホットキー",
@@ -64,10 +53,6 @@
             "service": {
                 "title": "サービス設定",
                 "label": "サービス"
-            },
-            "history": {
-                "label": "履歴",
-                "title": "履歴"
             }
         },
         "languages": {
@@ -96,7 +81,6 @@
             "zh_cn": "簡体字中国語"
         },
         "common": {
-            "plugin": "プラグイン",
             "cancel": "キャンセル",
             "ok": "Ok",
             "save": "保存"
@@ -114,33 +98,8 @@
             "copy_img": "画像をコピー"
         },
         "services": {
-            "translate": {
-                "caiyun": {
-                    "token": "トークン"
-                },
-                "transmart": {
-                    "token": "トークン"
-                },
-                "deepl": {
-                    "type": "サービスの種類"
-                }
-            },
+            "translate": {},
             "recognize": {
-                "volcengine_ocr": {
-                    "appid": "アプリID"
-                },
-                "volcengine_multi_lang_ocr": {
-                    "appid": "アプリID"
-                },
-                "qrcode": {
-                    "title": "QRコード"
-                },
-                "simple_latex_ocr": {
-                    "token": "トークン"
-                },
-                "tencent_img_ocr": {
-                    "title": "テンセント画像翻訳"
-                },
                 "llm": {
                     "title": "Vision Model OCR",
                     "request_path": "Request Path",
@@ -148,20 +107,6 @@
                     "model": "Model",
                     "model_description": "Requires a vision model that accepts image input (e.g. the Qwen3-VL family). Text-only models cannot read images.",
                     "prompt_description": "$lang is replaced with the English name of the selected recognition language, or Auto when set to automatic."
-                }
-            },
-            "tts": {
-                "lingva_tts": {
-                    "request_path": "リクエストパス"
-                }
-            },
-            "collection": {
-                "anki": {
-                    "title": "Anki"
-                },
-                "eudic": {
-                    "token": "トークン",
-                    "name": "コレクション名"
                 }
             },
             "provider_preset": "Provider Preset",
