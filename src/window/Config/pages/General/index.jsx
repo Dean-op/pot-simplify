@@ -21,13 +21,10 @@ import { LanguageFlag } from '../../../../utils/language';
 import { useToastStyle } from '../../../../hooks';
 import { osType } from '../../../../utils/env';
 
-let timer = null;
-
 export default function General() {
     const [autoStart, setAutoStart] = useState(false);
     const [fontList, setFontList] = useState(null);
     const [checkUpdate, setCheckUpdate] = useConfig('check_update', true);
-    const [serverPort, setServerPort] = useConfig('server_port', 60828);
     const [appLanguage, setAppLanguage] = useConfig('app_language', 'en');
     const [appTheme, setAppTheme] = useConfig('app_theme', 'system');
     const [appFont, setAppFont] = useConfig('app_font', 'default');
@@ -108,40 +105,6 @@ export default function General() {
                                 onValueChange={(v) => {
                                     setCheckUpdate(v);
                                 }}
-                            />
-                        )}
-                    </div>
-                    <div className='config-item'>
-                        <h3 className='my-auto'>{t('config.general.server_port')}</h3>
-                        {serverPort !== null && (
-                            <Input
-                                type='number'
-                                variant='bordered'
-                                value={serverPort}
-                                labelPlacement='outside-left'
-                                onValueChange={(v) => {
-                                    if (parseInt(v) !== serverPort) {
-                                        if (timer) {
-                                            clearTimeout(timer);
-                                        }
-                                        timer = setTimeout(() => {
-                                            toast.success(t('config.general.server_port_change'), {
-                                                duration: 3000,
-                                                style: toastStyle,
-                                            });
-                                        }, 1000);
-                                    }
-                                    if (v === '') {
-                                        setServerPort(0);
-                                    } else if (parseInt(v) > 65535) {
-                                        setServerPort(65535);
-                                    } else if (parseInt(v) < 0) {
-                                        setServerPort(0);
-                                    } else {
-                                        setServerPort(parseInt(v));
-                                    }
-                                }}
-                                className='max-w-[100px]'
                             />
                         )}
                     </div>

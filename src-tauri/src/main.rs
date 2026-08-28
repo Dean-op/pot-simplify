@@ -9,7 +9,6 @@ mod error;
 mod hotkey;
 mod lang_detect;
 mod screenshot;
-mod server;
 mod system_ocr;
 mod tray;
 mod updater;
@@ -24,7 +23,6 @@ use lang_detect::*;
 use log::info;
 use once_cell::sync::OnceCell;
 use screenshot::screenshot;
-use server::*;
 use std::sync::Mutex;
 use system_ocr::*;
 use tauri::api::notification::Notification;
@@ -33,6 +31,7 @@ use tauri_plugin_log::LogTarget;
 use tray::*;
 use updater::check_update;
 use window::config_window;
+use window::text_translate;
 use window::updater_window;
 
 // Global AppHandle
@@ -87,8 +86,6 @@ fn main() {
             app.manage(StringWrapper(Mutex::new("".to_string())));
             // Update Tray Menu
             update_tray(app.app_handle(), "".to_string(), "".to_string());
-            // Start http server
-            start_server();
             // Register Global Shortcut
             match register_shortcut("all") {
                 Ok(()) => {}
@@ -136,6 +133,7 @@ fn main() {
             system_ocr,
             set_proxy,
             unset_proxy,
+            text_translate,
             open_devtools,
             register_shortcut_by_frontend,
             update_tray,

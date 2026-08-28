@@ -259,6 +259,7 @@ pub fn input_translate() {
     window.emit("new_text", "[INPUT_TRANSLATE]").unwrap();
 }
 
+#[tauri::command(async)]
 pub fn text_translate(text: String) {
     let app_handle = APP.get().unwrap();
     // Clear State
