@@ -4,6 +4,8 @@
 *.jpg binary
 *.jpeg binary
 *.gif binary
+*.webp binary
+*.svg text eol=lf
 *.ico binary
 *.icns binary
 *.wasm binary
@@ -15,3 +17,6 @@
 *.pdf binary
 *.zip binary
 *.potext binary
+
+# macOS OCR 辅助二进制，没有扩展名，必须显式标记
+src-tauri/resources/ocr-* binary
