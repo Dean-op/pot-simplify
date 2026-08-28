@@ -1,4 +1,5 @@
 import { fetch, Body } from '@tauri-apps/api/http';
+import { buildChatCompletionsUrl, formatApiError } from '../../../utils/llm_provider';
 import { Language } from './info';
 import { defaultRequestArguments } from './Config';
 
@@ -7,16 +8,12 @@ export async function translate(text, from, to, options) {
 
     let { service, requestPath, model, apiKey, stream, promptList, requestArguments } = config;
 
-    if (!/https?:\/\/.+/.test(requestPath)) {
-        requestPath = `https://${requestPath}`;
-    }
-    const apiUrl = new URL(requestPath);
-
-    // in openai like api, /v1 is not required
-    if (service === 'openai' && !apiUrl.pathname.endsWith('/chat/completions')) {
-        // not openai like, populate completion endpoint
-        apiUrl.pathname += apiUrl.pathname.endsWith('/') ? '' : '/';
-        apiUrl.pathname += 'v1/chat/completions';
+    // azure 的地址是完整的 deployment 路径，不做补全；openai 兼容端点统一补到 /chat/completions
+    let apiUrl;
+    if (service === 'openai') {
+        apiUrl = buildChatCompletionsUrl(requestPath);
+    } else {
+        apiUrl = new URL(/^https?:\/\//.test(requestPath) ? requestPath : `https://${requestPath}`);
     }
 
     // 兼容旧版
@@ -115,7 +112,7 @@ export async function translate(text, from, to, options) {
                 reader.releaseLock();
             }
         } else {
-            throw `Http Request Error\nHttp Status: ${res.status}\n${JSON.stringify(res.data)}`;
+            throw `Http Request Error\n${formatApiError(res.status, await res.json().catch(() => null))}`;
         }
     } else {
         let res = await fetch(apiUrl.href, {
@@ -143,7 +140,7 @@ export async function translate(text, from, to, options) {
                 throw JSON.stringify(result);
             }
         } else {
-            throw `Http Request Error\nHttp Status: ${res.status}\n${JSON.stringify(res.data)}`;
+            throw `Http Request Error\n${formatApiError(res.status, res.data)}`;
         }
     }
 }

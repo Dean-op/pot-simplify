@@ -51,7 +51,7 @@ fn check_available(list: Vec<String>, builtin: Vec<&str>, plugin: Vec<String>, k
 }
 
 pub fn check_service_available() -> Result<(), Error> {
-    let builtin_recognize_list: Vec<&str> = vec!["system"];
+    let builtin_recognize_list: Vec<&str> = vec!["system", "llm"];
     let builtin_translate_list: Vec<&str> = vec![
         "openai",
         "google",

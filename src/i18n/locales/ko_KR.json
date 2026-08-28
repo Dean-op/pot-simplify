@@ -52,7 +52,23 @@
             },
             "help": "설정 방법 안내",
             "no_need": "즉시 사용 가능합니다 (설정 불필요)",
-            "instance_name": "설명 이름"
+            "instance_name": "설명 이름",
+            "provider_preset": "Provider Preset",
+            "provider_preset_select": "Select Provider",
+            "fetch_model_list": "Fetch Model List",
+            "model_list_pick": "Pick a model from the list",
+            "model_list_loaded": "Fetched {{count}} models",
+            "model_list_failed": "Failed to fetch model list: ",
+            "recognize": {
+                "llm": {
+                    "title": "Vision Model OCR",
+                    "request_path": "Request Path",
+                    "api_key": "API KEY",
+                    "model": "Model",
+                    "model_description": "Requires a vision model that accepts image input (e.g. the Qwen3-VL family). Text-only models cannot read images.",
+                    "prompt_description": "$lang is replaced with the English name of the selected recognition language, or Auto when set to automatic."
+                }
+            }
         },
         "languages": {
             "auto": "자동 감지",

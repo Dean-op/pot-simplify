@@ -188,6 +188,14 @@
                 },
                 "system": {
                     "title": "Sistema OCR"
+                },
+                "llm": {
+                    "title": "Vision Model OCR",
+                    "request_path": "Request Path",
+                    "api_key": "API KEY",
+                    "model": "Model",
+                    "model_description": "Requires a vision model that accepts image input (e.g. the Qwen3-VL family). Text-only models cannot read images.",
+                    "prompt_description": "$lang is replaced with the English name of the selected recognition language, or Auto when set to automatic."
                 }
             },
             "collection": {
@@ -205,7 +213,13 @@
                     "title": "Lingva",
                     "request_path": "Percorso richiesto"
                 }
-            }
+            },
+            "provider_preset": "Provider Preset",
+            "provider_preset_select": "Select Provider",
+            "fetch_model_list": "Fetch Model List",
+            "model_list_pick": "Pick a model from the list",
+            "model_list_loaded": "Fetched {{count}} models",
+            "model_list_failed": "Failed to fetch model list: "
         },
         "languages": {
             "mn_cy": "Mongolo (Cirillico)",

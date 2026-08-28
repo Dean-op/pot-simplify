@@ -427,6 +427,14 @@
                 },
                 "qrcode": {
                     "title": "QR Code"
+                },
+                "llm": {
+                    "title": "視覺模型 OCR",
+                    "request_path": "請求地址",
+                    "api_key": "API KEY",
+                    "model": "模型",
+                    "model_description": "需要支援圖片輸入的視覺模型（如 Qwen3-VL 系列）。普通文字模型無法識別圖片。",
+                    "prompt_description": "$lang 會被替換成所選識別語言的英文名稱，選擇「自動」時為 Auto。"
                 }
             },
             "tts": {
@@ -445,7 +453,13 @@
                     "name": "收藏名稱",
                     "token": "Token"
                 }
-            }
+            },
+            "provider_preset": "提供商預設",
+            "provider_preset_select": "選擇提供商",
+            "fetch_model_list": "拉取模型列表",
+            "model_list_pick": "從列表中選擇模型",
+            "model_list_loaded": "已拉取 {{count}} 個模型",
+            "model_list_failed": "拉取模型列表失敗："
         },
         "translate": {
             "translate": "翻譯",

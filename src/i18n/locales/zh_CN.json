@@ -430,6 +430,14 @@
                 },
                 "qrcode": {
                     "title": "二维码识别"
+                },
+                "llm": {
+                    "title": "视觉模型 OCR",
+                    "request_path": "请求地址",
+                    "api_key": "API KEY",
+                    "model": "模型",
+                    "model_description": "需要支持图片输入的视觉模型（如 Qwen3-VL 系列）。普通文本模型无法识别图片。",
+                    "prompt_description": "$lang 会被替换成所选识别语言的英文名称，选择「自动」时为 Auto。"
                 }
             },
             "tts": {
@@ -448,7 +456,13 @@
                     "name": "生词本名称",
                     "token": "Token"
                 }
-            }
+            },
+            "provider_preset": "提供商预设",
+            "provider_preset_select": "选择提供商",
+            "fetch_model_list": "拉取模型列表",
+            "model_list_pick": "从列表中选择模型",
+            "model_list_loaded": "已拉取 {{count}} 个模型",
+            "model_list_failed": "拉取模型列表失败："
         },
         "translate": {
             "translate": "翻译",

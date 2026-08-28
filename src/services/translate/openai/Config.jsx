@@ -1,4 +1,4 @@
-import { Input, Button, Switch, Textarea, Card, CardBody, Link } from '@nextui-org/react';
+import { Input, Button, Switch, Textarea, Select, SelectItem } from '@nextui-org/react';
 import { DropdownTrigger } from '@nextui-org/react';
 import { MdDeleteOutline } from 'react-icons/md';
 import { DropdownMenu } from '@nextui-org/react';
@@ -9,6 +9,7 @@ import { Dropdown } from '@nextui-org/react';
 import { open } from '@tauri-apps/api/shell';
 import React, { useState } from 'react';
 
+import { PROVIDER_PRESETS, fetchModelList } from '../../../utils/llm_provider';
 import { useConfig } from '../../../hooks/useConfig';
 import { useToastStyle } from '../../../hooks';
 import { translate } from './index';
@@ -70,8 +71,25 @@ export function Config(props) {
     }
 
     const [isLoading, setIsLoading] = useState(false);
+    const [modelList, setModelList] = useState([]);
+    const [isFetchingModels, setIsFetchingModels] = useState(false);
 
     const toastStyle = useToastStyle();
+
+    const loadModelList = () => {
+        setIsFetchingModels(true);
+        fetchModelList(openaiConfig['requestPath'], openaiConfig['apiKey']).then(
+            (list) => {
+                setIsFetchingModels(false);
+                setModelList(list);
+                toast.success(t('services.model_list_loaded', { count: list.length }), { style: toastStyle });
+            },
+            (e) => {
+                setIsFetchingModels(false);
+                toast.error(t('services.model_list_failed') + e.toString(), { style: toastStyle });
+            }
+        );
+    };
 
     return (
         openaiConfig !== null && (
@@ -122,6 +140,31 @@ export function Config(props) {
                     >
                         {t('services.help')}
                     </Button>
+                </div>
+                <div className='config-item'>
+                    <h3 className='my-auto'>{t('services.provider_preset')}</h3>
+                    <Dropdown>
+                        <DropdownTrigger>
+                            <Button variant='bordered'>{t('services.provider_preset_select')}</Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                            aria-label='provider preset'
+                            onAction={(key) => {
+                                const preset = PROVIDER_PRESETS.find((item) => item.key === key);
+                                if (!preset) return;
+                                setModelList([]);
+                                setOpenaiConfig({
+                                    ...openaiConfig,
+                                    service: 'openai',
+                                    requestPath: preset.base,
+                                });
+                            }}
+                        >
+                            {PROVIDER_PRESETS.map((preset) => (
+                                <DropdownItem key={preset.key}>{preset.label}</DropdownItem>
+                            ))}
+                        </DropdownMenu>
+                    </Dropdown>
                 </div>
                 <div className='config-item'>
                     <h3 className='my-auto'>{t('services.translate.openai.service')}</h3>
@@ -199,32 +242,6 @@ export function Config(props) {
                         }}
                     />
                 </div>
-                <Card
-                    isBlurred
-                    className='border-none bg-success/20 dark:bg-success/10'
-                    shadow='sm'
-                >
-                    <CardBody>
-                        <div>
-                            推荐
-                            <Link
-                                isExternal
-                                href='https://aihubmix.com/register?aff=trJY'
-                                color='primary'
-                            >
-                                AiHubMix
-                            </Link>
-                            的OpenAI API 密钥，速度飞快，经济实惠，1美元的OpenAI API 额度只需人民币6.3元
-                            <Link
-                                isExternal
-                                href='https://pot-app.com/ads/aihubmix.html'
-                                color='primary'
-                            >
-                                配置文档
-                            </Link>
-                        </div>
-                    </CardBody>
-                </Card>
                 <div className={`config-item ${openaiConfig.service === 'azure' && 'hidden'}`}>
                     <Input
                         label={t('services.translate.openai.model')}
@@ -243,6 +260,33 @@ export function Config(props) {
                             });
                         }}
                     />
+                </div>
+                <div className={`config-item ${openaiConfig.service === 'azure' && 'hidden'}`}>
+                    <Button
+                        isLoading={isFetchingModels}
+                        onPress={loadModelList}
+                    >
+                        {t('services.fetch_model_list')}
+                    </Button>
+                    {modelList.length > 0 && (
+                        <Select
+                            aria-label='model list'
+                            className='max-w-[50%]'
+                            placeholder={t('services.model_list_pick')}
+                            selectedKeys={modelList.includes(openaiConfig['model']) ? [openaiConfig['model']] : []}
+                            onChange={(e) => {
+                                if (!e.target.value) return;
+                                setOpenaiConfig({
+                                    ...openaiConfig,
+                                    model: e.target.value,
+                                });
+                            }}
+                        >
+                            {modelList.map((id) => (
+                                <SelectItem key={id}>{id}</SelectItem>
+                            ))}
+                        </Select>
+                    )}
                 </div>
                 <h3 className='my-auto'>Prompt List</h3>
                 <p className='text-[10px] text-default-700'>{t('services.translate.openai.prompt_description')}</p>
