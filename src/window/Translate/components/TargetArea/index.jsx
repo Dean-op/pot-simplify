@@ -23,7 +23,6 @@ import { semanticColors } from '@nextui-org/theme';
 import toast, { Toaster } from 'react-hot-toast';
 import { MdContentCopy } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import Database from 'tauri-plugin-sql-api';
 import { GiCycle } from 'react-icons/gi';
 import { useTheme } from 'next-themes';
 import { useAtomValue } from 'jotai';
@@ -64,7 +63,6 @@ export default function TargetArea(props) {
     const [collectionServiceList] = useConfig('collection_service_list', []);
     const [ttsServiceList] = useConfig('tts_service_list', ['lingva_tts']);
     const [translateSecondLanguage] = useConfig('translate_second_language', 'en');
-    const [historyDisable] = useConfig('history_disable', false);
     const [isLoading, setIsLoading] = useState(false);
     const [hide, setHide] = useState(true);
 
@@ -123,30 +121,6 @@ export default function TargetArea(props) {
         clipboardMonitor,
     ]);
 
-    // todo: history panel use service instance key
-    const addToHistory = async (text, source, target, serviceInstanceKey, result) => {
-        const db = await Database.load('sqlite:history.db');
-
-        await db
-            .execute(
-                'INSERT into history (text, source, target, service, result, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-                [text, source, target, serviceInstanceKey, result, Date.now()]
-            )
-            .then(
-                (v) => {
-                    db.close();
-                },
-                (e) => {
-                    db.execute(
-                        'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL,source TEXT NOT NULL,target TEXT NOT NULL,service TEXT NOT NULL, result TEXT NOT NULL,timestamp INTEGER NOT NULL)'
-                    ).then(() => {
-                        db.close();
-                        addToHistory(text, source, target, serviceInstanceKey, result);
-                    });
-                }
-            );
-    };
-
     function invokeOnce(fn) {
         let isInvoke = false;
 
@@ -196,15 +170,6 @@ export default function TargetArea(props) {
                         setIsLoading(false);
                         if (v !== '') {
                             setHideOnce(false);
-                        }
-                        if (!historyDisable) {
-                            addToHistory(
-                                sourceText.trim(),
-                                detectLanguage,
-                                newTargetLanguage,
-                                translateServiceName,
-                                typeof v === 'string' ? v.trim() : v
-                            );
                         }
                         if (index === 0 && !clipboardMonitor) {
                             switch (autoCopy) {
@@ -269,15 +234,6 @@ export default function TargetArea(props) {
                             setIsLoading(false);
                             if (v !== '') {
                                 setHideOnce(false);
-                            }
-                            if (!historyDisable) {
-                                addToHistory(
-                                    sourceText.trim(),
-                                    detectLanguage,
-                                    newTargetLanguage,
-                                    translateServiceName,
-                                    typeof v === 'string' ? v.trim() : v
-                                );
                             }
                             if (index === 0 && !clipboardMonitor) {
                                 switch (autoCopy) {
