@@ -51,23 +51,7 @@ fn check_available(list: Vec<String>, builtin: Vec<&str>, plugin: Vec<String>, k
 }
 
 pub fn check_service_available() -> Result<(), Error> {
-    let builtin_recognize_list: Vec<&str> = vec![
-        "baidu_ocr",
-        "baidu_accurate_ocr",
-        "baidu_img_ocr",
-        "iflytek_ocr",
-        "iflytek_intsig_ocr",
-        "iflytek_latex_ocr",
-        "qrcode",
-        "simple_latex_ocr",
-        "system",
-        "tencent_ocr",
-        "tencent_accurate_ocr",
-        "tencent_img_ocr",
-        "tesseract",
-        "volcengine_ocr",
-        "volcengine_multi_lang_ocr",
-    ];
+    let builtin_recognize_list: Vec<&str> = vec!["system"];
     let builtin_translate_list: Vec<&str> = vec![
         "alibaba",
         "baidu",
