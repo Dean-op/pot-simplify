@@ -53,27 +53,11 @@ fn check_available(list: Vec<String>, builtin: Vec<&str>, plugin: Vec<String>, k
 pub fn check_service_available() -> Result<(), Error> {
     let builtin_recognize_list: Vec<&str> = vec!["system"];
     let builtin_translate_list: Vec<&str> = vec![
-        "alibaba",
-        "baidu",
-        "baidu_field",
-        "bing",
-        "bing_dict",
-        "caiyun",
-        "cambridge_dict",
-        "chatglm",
-        "deepl",
-        "ecdict",
-        "lingva",
-        "geminipro",
-        "niutrans",
-        "ollama",
         "openai",
         "google",
-        "tencent",
-        "transmart",
-        "volcengine",
-        "yandex",
-        "youdao",
+        "bing_dict",
+        "cambridge_dict",
+        "ecdict",
     ];
     let builtin_tts_list: Vec<&str> = vec!["lingva_tts"];
     let builtin_collection_list: Vec<&str> = vec!["anki", "eudic"];
