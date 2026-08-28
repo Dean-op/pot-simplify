@@ -2,7 +2,6 @@ name: Package
 on:
     push:
         branches: [master]
-        tags-ignore: [updater]
 permissions: write-all
 
 jobs:
@@ -146,12 +145,6 @@ jobs:
                   name: macos_${{ matrix.target }}_dmg
                   path: src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
                   if-no-files-found: error
-            - name: Upload Artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: macos_${{ matrix.target }}_updater
-                  path: src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app*
-                  if-no-files-found: error
             - name: Upload Release
               if: startsWith(github.ref, 'refs/tags')
               uses: softprops/action-gh-release@v1
@@ -211,7 +204,7 @@ jobs:
               run: |
                   $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
                   $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
-                  pnpm tauri build -b nsis,updater --target ${{ matrix.target }}
+                  pnpm tauri build -b nsis --target ${{ matrix.target }}
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -279,7 +272,7 @@ jobs:
               run: |
                   $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
                   $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
-                  pnpm tauri build -b nsis,updater --target ${{ matrix.target }}
+                  pnpm tauri build -b nsis --target ${{ matrix.target }}
                   Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.exe pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.exe
                   Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip
                   Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip.sig pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip.sig
@@ -388,45 +381,6 @@ jobs:
                     -H "Accept: application/vnd.github.everest-preview+json" \
                     -H "Authorization: token ${{ secrets.TOKEN }}" \
                     -d '{"event_type": "plugins-updated"}'
-
-    release-update:
-        needs: [build-for-macos, build-for-windows, build-for-linux, build-for-windows-fix-runtime]
-        runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags')
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Install git
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y git curl
-            - name: Get Tag Name
-              run: |
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 9
-            - name: pnpm install
-              run: pnpm install
-            - name: Release updater file
-              run: |
-                  pnpm run updater
-                  pnpm run updater:fixRuntime
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            - name: Upload Release
-              uses: softprops/action-gh-release@v1
-              with:
-                  body: ${{env.VERSION}}
-                  tag_name: updater
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  files: |
-                      update.json
-                      update-fix-runtime.json
 
     homebrew:
         name: Update Homebrew cask

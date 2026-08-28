@@ -9,7 +9,6 @@ import { invoke } from '@tauri-apps/api/tauri';
 import Screenshot from './window/Screenshot';
 import Translate from './window/Translate';
 import Recognize from './window/Recognize';
-import Updater from './window/Updater';
 import { store } from './utils/store';
 import Config from './window/Config';
 import { useConfig } from './hooks';
@@ -21,7 +20,6 @@ const windowMap = {
     screenshot: <Screenshot />,
     recognize: <Recognize />,
     config: <Config />,
-    updater: <Updater />,
 };
 
 export default function App() {

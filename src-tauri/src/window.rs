@@ -400,13 +400,3 @@ pub fn ocr_translate() {
         });
     }
 }
-
-#[tauri::command(async)]
-pub fn updater_window() {
-    let (window, _exists) = build_window("updater", "Updater");
-    window
-        .set_min_size(Some(tauri::LogicalSize::new(600, 400)))
-        .unwrap();
-    window.set_size(tauri::LogicalSize::new(600, 400)).unwrap();
-    window.center().unwrap();
-}

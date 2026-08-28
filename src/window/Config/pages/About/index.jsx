@@ -163,16 +163,6 @@ export default function About() {
                         variant='light'
                         className='my-[5px]'
                         size='sm'
-                        onPress={() => {
-                            invoke('updater_window');
-                        }}
-                    >
-                        {t('config.about.check_update')}
-                    </Button>
-                    <Button
-                        variant='light'
-                        className='my-[5px]'
-                        size='sm'
                         onPress={async () => {
                             const dir = await appLogDir();
                             open(dir);
