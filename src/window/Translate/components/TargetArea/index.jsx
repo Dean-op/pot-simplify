@@ -12,7 +12,6 @@ import {
     Tooltip,
 } from '@nextui-org/react';
 import { BiCollapseVertical, BiExpandVertical } from 'react-icons/bi';
-import { BaseDirectory, readTextFile } from '@tauri-apps/api/fs';
 import { sendNotification } from '@tauri-apps/api/notification';
 import React, { useEffect, useState, useRef } from 'react';
 import { writeText } from '@tauri-apps/api/clipboard';
@@ -35,7 +34,6 @@ import { useConfig, useToastStyle, useVoice } from '../../../../hooks';
 import { sourceTextAtom, detectLanguageAtom } from '../SourceArea';
 import { invoke_plugin } from '../../../../utils/invoke_plugin';
 import * as builtinServices from '../../../../services/translate';
-import * as builtinTtsServices from '../../../../services/tts';
 
 import { info, error as logError } from 'tauri-plugin-log-api';
 import {
@@ -59,7 +57,6 @@ export default function TargetArea(props) {
     }
 
     const [appFontSize] = useConfig('app_font_size', 16);
-    const [ttsServiceList] = useConfig('tts_service_list', ['lingva_tts']);
     const [translateSecondLanguage] = useConfig('translate_second_language', 'en');
     const [isLoading, setIsLoading] = useState(false);
     const [hide, setHide] = useState(true);
@@ -75,7 +72,6 @@ export default function TargetArea(props) {
     const [clipboardMonitor] = useConfig('clipboard_monitor', false);
 
     const detectLanguage = useAtomValue(detectLanguageAtom);
-    const [ttsPluginInfo, setTtsPluginInfo] = useState();
     const { t } = useTranslation();
     const textAreaRef = useRef();
     const toastStyle = useToastStyle();
@@ -279,47 +275,6 @@ export default function TargetArea(props) {
             }
         }
     }, [result]);
-
-    // refresh tts config
-    useEffect(() => {
-        if (ttsServiceList && getServiceSouceType(ttsServiceList[0]) === ServiceSourceType.PLUGIN) {
-            readTextFile(`plugins/tts/${getServiceName(ttsServiceList[0])}/info.json`, {
-                dir: BaseDirectory.AppConfig,
-            }).then((infoStr) => {
-                setTtsPluginInfo(JSON.parse(infoStr));
-            });
-        }
-    }, [ttsServiceList]);
-
-    // handle tts speak
-    const handleSpeak = async () => {
-        const instanceKey = ttsServiceList[0];
-        if (getServiceSouceType(instanceKey) === ServiceSourceType.PLUGIN) {
-            const pluginConfig = serviceInstanceConfigMap[instanceKey];
-            if (!(targetLanguage in ttsPluginInfo.language)) {
-                throw new Error('Language not supported');
-            }
-            let [func, utils] = await invoke_plugin('tts', getServiceName(instanceKey));
-            let data = await func(result, ttsPluginInfo.language[targetLanguage], {
-                config: pluginConfig,
-                utils,
-            });
-            speak(data);
-        } else {
-            if (!(targetLanguage in builtinTtsServices[getServiceName(instanceKey)].Language)) {
-                throw new Error('Language not supported');
-            }
-            const instanceConfig = serviceInstanceConfigMap[instanceKey];
-            let data = await builtinTtsServices[getServiceName(instanceKey)].tts(
-                result,
-                builtinTtsServices[getServiceName(instanceKey)].Language[targetLanguage],
-                {
-                    config: instanceConfig,
-                }
-            );
-            speak(data);
-        }
-    };
 
     const [boundRef, bounds] = useMeasure({ scroll: true });
     const springs = useSpring({
@@ -586,22 +541,6 @@ export default function TargetArea(props) {
                         className={`bg-content1 rounded-none rounded-b-[10px] flex px-[12px] p-[5px] ${hide && 'hidden'}`}
                     >
                         <ButtonGroup>
-                            {/* speak button */}
-                            <Tooltip content={t('translate.speak')}>
-                                <Button
-                                    isIconOnly
-                                    variant='light'
-                                    size='sm'
-                                    isDisabled={typeof result !== 'string' || result === ''}
-                                    onPress={() => {
-                                        handleSpeak().catch((e) => {
-                                            toast.error(e.toString(), { style: toastStyle });
-                                        });
-                                    }}
-                                >
-                                    <HiOutlineVolumeUp className='text-[16px]' />
-                                </Button>
-                            </Tooltip>
                             {/* copy button */}
                             <Tooltip content={t('translate.copy')}>
                                 <Button

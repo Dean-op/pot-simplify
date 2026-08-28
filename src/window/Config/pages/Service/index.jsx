@@ -7,7 +7,6 @@ import { convertFileSrc } from '@tauri-apps/api/tauri';
 import React, { useEffect, useState } from 'react';
 import Translate from './Translate';
 import Recognize from './Recognize';
-import Tts from './Tts';
 import { ServiceType } from '../../../../utils/service_instance';
 
 let unlisten = null;
@@ -17,7 +16,7 @@ export default function Service() {
     const { t } = useTranslation();
 
     const loadPluginList = async () => {
-        const serviceTypeList = ['translate', 'tts', 'recognize'];
+        const serviceTypeList = ['translate', 'recognize'];
         let temp = {};
         for (const serviceType of serviceTypeList) {
             temp[serviceType] = {};
@@ -73,12 +72,6 @@ export default function Service() {
                     title={t(`config.service.recognize`)}
                 >
                     <Recognize pluginList={pluginList[ServiceType.RECOGNIZE]} />
-                </Tab>
-                <Tab
-                    key='tts'
-                    title={t(`config.service.tts`)}
-                >
-                    <Tts pluginList={pluginList[ServiceType.TTS]} />
                 </Tab>
             </Tabs>
         )

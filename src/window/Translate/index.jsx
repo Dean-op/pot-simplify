@@ -73,7 +73,6 @@ export default function Translate() {
         'ecdict',
     ]);
     const [recognizeServiceInstanceList] = useConfig('recognize_service_list', ['system']);
-    const [ttsServiceInstanceList] = useConfig('tts_service_list', ['lingva_tts']);
     const [hideLanguage] = useConfig('hide_language', false);
     const [pined, setPined] = useState(false);
     const [pluginList, setPluginList] = useState(null);
@@ -158,7 +157,7 @@ export default function Translate() {
     }, [rememberWindowSize]);
 
     const loadPluginList = async () => {
-        const serviceTypeList = ['translate', 'tts', 'recognize'];
+        const serviceTypeList = ['translate', 'recognize'];
         let temp = {};
         for (const serviceType of serviceTypeList) {
             temp[serviceType] = {};
@@ -199,20 +198,13 @@ export default function Translate() {
         for (const serviceInstanceKey of recognizeServiceInstanceList) {
             config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
         }
-        for (const serviceInstanceKey of ttsServiceInstanceList) {
-            config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
-        }
         setServiceInstanceConfigMap({ ...config });
     };
     useEffect(() => {
-        if (
-            translateServiceInstanceList !== null &&
-            recognizeServiceInstanceList !== null &&
-            ttsServiceInstanceList !== null
-        ) {
+        if (translateServiceInstanceList !== null && recognizeServiceInstanceList !== null) {
             loadServiceInstanceConfigMap();
         }
-    }, [translateServiceInstanceList, recognizeServiceInstanceList, ttsServiceInstanceList]);
+    }, [translateServiceInstanceList, recognizeServiceInstanceList]);
 
     return (
         pluginList && (
