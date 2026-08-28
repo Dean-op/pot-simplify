@@ -1,7 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod backup;
 mod clipboard;
 mod cmd;
 mod config;
@@ -13,7 +12,6 @@ mod system_ocr;
 mod tray;
 mod window;
 
-use backup::*;
 use clipboard::*;
 use cmd::*;
 use config::*;
@@ -134,10 +132,7 @@ fn main() {
             update_tray,
             screenshot,
             lang_detect,
-            webdav,
-            local,
-            font_list,
-            aliyun
+            font_list
         ])
         .on_system_tray_event(tray_event_handler)
         .build(tauri::generate_context!())

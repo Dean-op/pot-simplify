@@ -56,10 +56,6 @@
                     "$APPCONFIG/**",
                     "$APPCACHE/**"
                 ]
-            },
-            "dialog": {
-                "open": true,
-                "save": true
             }
         },
         "bundle": {

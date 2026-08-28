@@ -5,8 +5,6 @@ import Recognize from '../pages/Recognize';
 import General from '../pages/General';
 import Service from '../pages/Service';
 import Hotkey from '../pages/Hotkey';
-import Backup from '../pages/Backup';
-import About from '../pages/About';
 
 const routes = [
     {
@@ -28,14 +26,6 @@ const routes = [
     {
         path: '/service',
         element: <Service />,
-    },
-    {
-        path: '/backup',
-        element: <Backup />,
-    },
-    {
-        path: '/about',
-        element: <About />,
     },
     {
         path: '/',
