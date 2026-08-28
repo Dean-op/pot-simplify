@@ -74,7 +74,6 @@ export default function Translate() {
     ]);
     const [recognizeServiceInstanceList] = useConfig('recognize_service_list', ['system']);
     const [ttsServiceInstanceList] = useConfig('tts_service_list', ['lingva_tts']);
-    const [collectionServiceInstanceList] = useConfig('collection_service_list', []);
     const [hideLanguage] = useConfig('hide_language', false);
     const [pined, setPined] = useState(false);
     const [pluginList, setPluginList] = useState(null);
@@ -159,7 +158,7 @@ export default function Translate() {
     }, [rememberWindowSize]);
 
     const loadPluginList = async () => {
-        const serviceTypeList = ['translate', 'tts', 'recognize', 'collection'];
+        const serviceTypeList = ['translate', 'tts', 'recognize'];
         let temp = {};
         for (const serviceType of serviceTypeList) {
             temp[serviceType] = {};
@@ -203,26 +202,17 @@ export default function Translate() {
         for (const serviceInstanceKey of ttsServiceInstanceList) {
             config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
         }
-        for (const serviceInstanceKey of collectionServiceInstanceList) {
-            config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
-        }
         setServiceInstanceConfigMap({ ...config });
     };
     useEffect(() => {
         if (
             translateServiceInstanceList !== null &&
             recognizeServiceInstanceList !== null &&
-            ttsServiceInstanceList !== null &&
-            collectionServiceInstanceList !== null
+            ttsServiceInstanceList !== null
         ) {
             loadServiceInstanceConfigMap();
         }
-    }, [
-        translateServiceInstanceList,
-        recognizeServiceInstanceList,
-        ttsServiceInstanceList,
-        collectionServiceInstanceList,
-    ]);
+    }, [translateServiceInstanceList, recognizeServiceInstanceList, ttsServiceInstanceList]);
 
     return (
         pluginList && (

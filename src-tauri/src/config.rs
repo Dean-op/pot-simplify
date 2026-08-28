@@ -60,12 +60,10 @@ pub fn check_service_available() -> Result<(), Error> {
         "ecdict",
     ];
     let builtin_tts_list: Vec<&str> = vec!["lingva_tts"];
-    let builtin_collection_list: Vec<&str> = vec!["anki", "eudic"];
 
     let plugin_recognize_list: Vec<String> = get_plugin_list("recognize").unwrap_or_default();
     let plugin_translate_list: Vec<String> = get_plugin_list("translate").unwrap_or_default();
     let plugin_tts_list: Vec<String> = get_plugin_list("tts").unwrap_or_default();
-    let plugin_collection_list: Vec<String> = get_plugin_list("collection").unwrap_or_default();
     if let Some(recognize_service_list) = get("recognize_service_list") {
         let recognize_service_list: Vec<String> = serde_json::from_value(recognize_service_list)?;
         check_available(
@@ -91,15 +89,6 @@ pub fn check_service_available() -> Result<(), Error> {
             builtin_tts_list,
             plugin_tts_list,
             "tts_service_list",
-        );
-    }
-    if let Some(collection_service_list) = get("collection_service_list") {
-        let collection_service_list: Vec<String> = serde_json::from_value(collection_service_list)?;
-        check_available(
-            collection_service_list,
-            builtin_collection_list,
-            plugin_collection_list,
-            "collection_service_list",
         );
     }
     Ok(())
