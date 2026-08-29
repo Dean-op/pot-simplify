@@ -103,15 +103,7 @@
             "csp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
             "devCsp": "default-src * data: ; img-src * 'self' asset: https: data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';"
         },
-        "windows": [
-            {
-                "title": "Daemon",
-                "label": "daemon",
-                "visible": false,
-                "url": "daemon.html",
-                "additionalBrowserArgs": "--disable-web-security"
-            }
-        ],
+        "windows": [],
         "systemTray": {
             "iconPath": "icons/icon.png",
             "iconAsTemplate": true

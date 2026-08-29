@@ -16,12 +16,17 @@ use tauri::WindowBuilder;
 use window_shadows::set_shadow;
 
 // Get daemon window instance
+//
+// daemon 窗口只用来枚举显示器（Tauri v1 的 AppHandle 没有
+// available_monitors，必须借一个 Window）。它已经从 tauri.conf.json 的
+// windows 里删掉了，改成第一次要用时才建——常驻托盘时少一个 WebView2
+// 实例。建好之后不主动关闭：每次划词都重建 WebView 会更慢。
 fn get_daemon_window() -> Window {
     let app_handle = APP.get().unwrap();
     match app_handle.get_window("daemon") {
         Some(v) => v,
         None => {
-            warn!("Daemon window not found, create new daemon window!");
+            info!("Daemon window not found, create new daemon window!");
             WindowBuilder::new(
                 app_handle,
                 "daemon",
