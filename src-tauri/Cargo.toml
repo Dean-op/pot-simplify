@@ -50,3 +50,13 @@ window-shadows = "0.2"
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+# 原本没有这一段，走的是 Cargo 默认（opt-level = 3、lto = false、
+# codegen-units = 16、不 strip）。代价是 release 构建时间大约翻倍。
+# 没加 panic = "abort"：代码里 .unwrap() 不少，unwind 掉一个窗口
+# 比整个进程被 abort 好收场。
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
