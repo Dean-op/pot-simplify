@@ -160,7 +160,12 @@ jobs:
             - name: Build and Package
               run: |
                   pnpm tauri build -b nsis --target ${{ matrix.target }}
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.exe pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.exe
+                  # 不写死 pot-simplify_<版本>_<arch>-setup.exe：产物名由 tauri.conf.json 的
+                  # productName 和版本号拼出来，写死过一次就得跟着改一次。按后缀找唯一那个 exe。
+                  $nsis = ".\src-tauri\target\${{ matrix.target }}\release\bundle\nsis"
+                  $setup = @(Get-ChildItem "$nsis\*-setup.exe" -File)
+                  if ($setup.Count -ne 1) { throw "期望 1 个 setup.exe，实际 $($setup.Count) 个" }
+                  Rename-Item $setup[0].FullName ($setup[0].Name -replace '-setup\.exe$', '_fix_webview2_runtime-setup.exe')
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:

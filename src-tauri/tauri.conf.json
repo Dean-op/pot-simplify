@@ -7,7 +7,7 @@
         "withGlobalTauri": false
     },
     "package": {
-        "productName": "pot",
+        "productName": "pot-simplify",
         "version": "3.0.7"
     },
     "tauri": {
@@ -64,7 +64,7 @@
             ],
             "identifier": "com.pot-app.desktop",
             "longDescription": "A text translation and ocr software for Windows",
-            "shortDescription": "Pot App",
+            "shortDescription": "pot-simplify",
             "externalBin": [],
             "resources": [],
             "icon": [

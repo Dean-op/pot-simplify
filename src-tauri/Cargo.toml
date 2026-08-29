@@ -1,10 +1,13 @@
 [package]
-name = "pot"
+# 包名同时决定 target/ 下的可执行文件名（pot-simplify.exe）。
+# bundle identifier 故意仍是 com.pot-app.desktop——它决定 %APPDATA% 下的
+# 配置/日志目录，改了等于把老设置（热键、API key）全丢掉。
+name = "pot-simplify"
 version = "0.0.0"
-description = "Pot App"
-authors = ["pot-app"]
+description = "A text translation and OCR tool for Windows"
+authors = ["Dean", "pot-app"]
 license = "GPL-3.0-only"
-repository = "https://github.com/pot-app/pot-desktop"
+repository = "https://github.com/Dean-op/pot-simplify"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

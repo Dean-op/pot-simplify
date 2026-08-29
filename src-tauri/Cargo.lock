@@ -3944,7 +3944,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pot"
+name = "pot-simplify"
 version = "0.0.0"
 dependencies = [
  "arboard",

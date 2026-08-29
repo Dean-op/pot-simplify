@@ -1,4 +1,4 @@
-# pot-desktop 构建验证脚本
+# pot-simplify 构建验证脚本
 #
 # 用途：在 Windows 上跑一遍沙箱里跑不了的构建步骤，把完整输出落到
 # verify-output.log（已被 .gitignore 的 *.log 规则忽略），方便 Claude 直接读取。
@@ -44,7 +44,7 @@ function Step($name, $cmd, $dir) {
     return $code
 }
 
-Log "pot-desktop 构建验证  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+Log "pot-simplify 构建验证  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Log "仓库: $root"
 Log "commit: $(git -C $root rev-parse --short HEAD) $(git -C $root log -1 --pretty=%s)"
 Log "工作区改动: $(@(git -C $root status --porcelain).Count) 个文件"
