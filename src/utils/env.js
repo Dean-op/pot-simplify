@@ -1,14 +1,9 @@
-import { type, arch as archFn, version } from '@tauri-apps/api/os';
-import { getVersion } from '@tauri-apps/api/app';
+import { type } from '@tauri-apps/api/os';
 
+// 只留 osType。arch / osVersion / appVersion 原本只有「关于」页在用，
+// 那个页面已经删掉，再拉这三个 IPC 纯粹是白等启动时间。
 export let osType = '';
-export let arch = '';
-export let osVersion = '';
-export let appVersion = '';
 
 export async function initEnv() {
     osType = await type();
-    arch = await archFn();
-    osVersion = await version();
-    appVersion = await getVersion();
 }
