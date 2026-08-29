@@ -14,7 +14,7 @@ import { invoke } from '@tauri-apps/api';
 import { useTheme } from 'next-themes';
 
 import { useConfig } from '../../../../hooks/useConfig';
-import { loadLanguage } from '../../../../i18n';
+import { changeLanguage, normalizeLanguage } from '../../../../i18n';
 
 export default function General() {
     const [autoStart, setAutoStart] = useState(false);
@@ -27,29 +27,12 @@ export default function General() {
     const [transparent, setTransparent] = useConfig('transparent', true);
     const [devMode, setDevMode] = useConfig('dev_mode', false);
     const [trayClickEvent, setTrayClickEvent] = useConfig('tray_click_event', 'config');
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { setTheme } = useTheme();
 
     const languageName = {
         zh_cn: '简体中文',
-        zh_tw: '繁體中文',
         en: 'English',
-        ja: '日本語',
-        ko: '한국어',
-        fr: 'Français',
-        es: 'Español',
-        ru: 'Русский',
-        de: 'Deutsch',
-        it: 'Italiano',
-        tr: 'Türkçe',
-        pt_pt: 'Português',
-        pt_br: 'Português (Brasil)',
-        nb_no: 'Norsk Bokmål',
-        nn_no: 'Norsk Nynorsk',
-        fa: 'فارسی',
-        uk: 'Українська',
-        ar: 'العربية',
-        he: 'עִבְרִית',
     };
 
     useEffect(() => {
@@ -92,38 +75,19 @@ export default function General() {
                         {appLanguage !== null && (
                             <Dropdown>
                                 <DropdownTrigger>
-                                    <Button variant='bordered'>{languageName[appLanguage]}</Button>
+                                    <Button variant='bordered'>{languageName[normalizeLanguage(appLanguage)]}</Button>
                                 </DropdownTrigger>
                                 <DropdownMenu
                                     aria-label='app language'
                                     className='max-h-[40vh] overflow-y-auto'
                                     onAction={(key) => {
                                         setAppLanguage(key);
-                                        loadLanguage(key).then(() => {
-                                            i18n.changeLanguage(key);
-                                        });
+                                        void changeLanguage(key);
                                         invoke('update_tray', { language: key, copyMode: '' });
                                     }}
                                 >
                                     <DropdownItem key='zh_cn'>简体中文</DropdownItem>
-                                    <DropdownItem key='zh_tw'>繁體中文</DropdownItem>
                                     <DropdownItem key='en'>English</DropdownItem>
-                                    <DropdownItem key='ja'>日本語</DropdownItem>
-                                    <DropdownItem key='ko'>한국어</DropdownItem>
-                                    <DropdownItem key='fr'>Français</DropdownItem>
-                                    <DropdownItem key='de'>Deutsch</DropdownItem>
-                                    <DropdownItem key='es'>Español</DropdownItem>
-                                    <DropdownItem key='ru'>Русский</DropdownItem>
-                                    <DropdownItem key='it'>Italiano</DropdownItem>
-                                    <DropdownItem key='tr'>Türkçe</DropdownItem>
-                                    <DropdownItem key='pt_pt'>Português</DropdownItem>
-                                    <DropdownItem key='pt_br'>Português (Brasil)</DropdownItem>
-                                    <DropdownItem key='nb_no'>Norsk Bokmål</DropdownItem>
-                                    <DropdownItem key='nn_no'>Norsk Nynorsk</DropdownItem>
-                                    <DropdownItem key='fa'>فارسی</DropdownItem>
-                                    <DropdownItem key='uk'>Українська</DropdownItem>
-                                    <DropdownItem key='ar'>العربية</DropdownItem>
-                                    <DropdownItem key='he'>עִבְרִית</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                         )}

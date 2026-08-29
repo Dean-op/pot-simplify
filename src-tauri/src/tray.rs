@@ -184,6 +184,7 @@ fn on_quit_click(app: &AppHandle) {
 
 // 11 个 tray_menu_xx() 原来结构一模一样，只有字面量不同，加起来 400 行。
 // 现在收成一张标签表 + 一个构建函数：加语言只用加一个 const。
+// 界面语言裁到中英两种后，这里也只留 EN / ZH_CN 两张表。
 struct TrayLabels {
     input_translate: &'static str,
     clipboard_monitor: &'static str,
@@ -232,162 +233,10 @@ const TRAY_LABELS_ZH_CN: TrayLabels = TrayLabels {
     quit: "退出",
 };
 
-const TRAY_LABELS_ZH_TW: TrayLabels = TrayLabels {
-    input_translate: "輸入翻譯",
-    clipboard_monitor: "偵聽剪貼簿",
-    auto_copy: "自動複製",
-    copy_source: "原文",
-    copy_target: "譯文",
-    copy_source_target: "原文+譯文",
-    copy_disable: "關閉",
-    ocr_recognize: "文字識別",
-    ocr_translate: "截圖翻譯",
-    config: "偏好設定",
-    view_log: "查看日誌",
-    restart: "重啓程式",
-    quit: "退出",
-};
-
-const TRAY_LABELS_JA: TrayLabels = TrayLabels {
-    input_translate: "翻訳を入力",
-    clipboard_monitor: "クリップボードを監視する",
-    auto_copy: "自動コピー",
-    copy_source: "原文",
-    copy_target: "訳文",
-    copy_source_target: "原文+訳文",
-    copy_disable: "閉じる",
-    ocr_recognize: "テキスト認識",
-    ocr_translate: "スクリーンショットの翻訳",
-    config: "プリファレンス設定",
-    view_log: "ログを見る",
-    restart: "アプリの再起動",
-    quit: "退出する",
-};
-
-const TRAY_LABELS_KO: TrayLabels = TrayLabels {
-    input_translate: "입력 번역",
-    clipboard_monitor: "감청 전단판",
-    auto_copy: "자동 복사",
-    copy_source: "원문",
-    copy_target: "번역문",
-    copy_source_target: "원문+번역문",
-    copy_disable: "닫기",
-    ocr_recognize: "문자인식",
-    ocr_translate: "스크린샷 번역",
-    config: "기본 설정",
-    view_log: "로그 보기",
-    restart: "응용 프로그램 다시 시작",
-    quit: "퇴출",
-};
-
-const TRAY_LABELS_FR: TrayLabels = TrayLabels {
-    input_translate: "Traduction d'entrée",
-    clipboard_monitor: "Surveiller le presse-papiers",
-    auto_copy: "Copier automatiquement",
-    copy_source: "Source",
-    copy_target: "Cible",
-    copy_source_target: "Source+Cible",
-    copy_disable: "Désactiver",
-    ocr_recognize: "Reconnaissance de texte",
-    ocr_translate: "Traduction d'image",
-    config: "Paramètres",
-    view_log: "Voir le journal",
-    restart: "Redémarrer l'application",
-    quit: "Quitter",
-};
-
-const TRAY_LABELS_DE: TrayLabels = TrayLabels {
-    input_translate: "Eingabeübersetzung",
-    clipboard_monitor: "Zwischenablage überwachen",
-    auto_copy: "Automatisch kopieren",
-    copy_source: "Quelle",
-    copy_target: "Ziel",
-    copy_source_target: "Quelle+Ziel",
-    copy_disable: "Deaktivieren",
-    ocr_recognize: "Texterkennung",
-    ocr_translate: "Bildübersetzung",
-    config: "Einstellungen",
-    view_log: "Protokoll anzeigen",
-    restart: "Anwendung neu starten",
-    quit: "Beenden",
-};
-
-const TRAY_LABELS_RU: TrayLabels = TrayLabels {
-    input_translate: "Ввод перевода",
-    clipboard_monitor: "Следить за буфером обмена",
-    auto_copy: "Автоматическое копирование",
-    copy_source: "Источник",
-    copy_target: "Цель",
-    copy_source_target: "Источник+Цель",
-    copy_disable: "Отключить",
-    ocr_recognize: "Распознавание текста",
-    ocr_translate: "Перевод изображения",
-    config: "Настройки",
-    view_log: "Просмотр журнала",
-    restart: "Перезапустить приложение",
-    quit: "Выход",
-};
-
-const TRAY_LABELS_FA: TrayLabels = TrayLabels {
-    input_translate: "متن",
-    clipboard_monitor: "گوش دادن به تخته برش",
-    auto_copy: "کپی خودکار",
-    copy_source: "منبع",
-    copy_target: "هدف",
-    copy_source_target: "منبع + هدف",
-    copy_disable: "متن",
-    ocr_recognize: "تشخیص متن",
-    ocr_translate: "ترجمه عکس",
-    config: "تنظیمات ترجیح",
-    view_log: "مشاهده گزارشات",
-    restart: "راه‌اندازی مجدد برنامه",
-    quit: "خروج",
-};
-
-const TRAY_LABELS_PT_BR: TrayLabels = TrayLabels {
-    input_translate: "Traduzir Entrada",
-    clipboard_monitor: "Monitorando a área de transferência",
-    auto_copy: "Copiar Automaticamente",
-    copy_source: "Origem",
-    copy_target: "Destino",
-    copy_source_target: "Origem+Destino",
-    copy_disable: "Desabilitar",
-    ocr_recognize: "Reconhecimento de Texto",
-    ocr_translate: "Tradução de Imagem",
-    config: "Configurações",
-    view_log: "Exibir Registro",
-    restart: "Reiniciar aplicativo",
-    quit: "Sair",
-};
-
-const TRAY_LABELS_UK: TrayLabels = TrayLabels {
-    input_translate: "Введення перекладу",
-    clipboard_monitor: "Стежити за буфером обміну",
-    auto_copy: "Автоматичне копіювання",
-    copy_source: "Джерело",
-    copy_target: "Мета",
-    copy_source_target: "Джерело+Мета",
-    copy_disable: "Відключивши",
-    ocr_recognize: "Розпізнавання тексту",
-    ocr_translate: "Переклад зображення",
-    config: "Настройка",
-    view_log: "Перегляд журналу",
-    restart: "Перезапустити додаток",
-    quit: "Вихід",
-};
-
 fn tray_labels(language: &str) -> &'static TrayLabels {
     match language {
         "zh_cn" => &TRAY_LABELS_ZH_CN,
-        "zh_tw" => &TRAY_LABELS_ZH_TW,
-        "ja" => &TRAY_LABELS_JA,
-        "ko" => &TRAY_LABELS_KO,
-        "fr" => &TRAY_LABELS_FR,
-        "de" => &TRAY_LABELS_DE,
-        "ru" => &TRAY_LABELS_RU,
-        "fa" => &TRAY_LABELS_FA,
-        "pt_br" => &TRAY_LABELS_PT_BR,
-        "uk" => &TRAY_LABELS_UK,
+        // 界面语言只留中英，其余（包括老配置里存的 ja / pt_br 等）一律走 en
         _ => &TRAY_LABELS_EN,
     }
 }

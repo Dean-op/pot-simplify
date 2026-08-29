@@ -1,14 +1,13 @@
 import { appWindow } from '@tauri-apps/api/window';
 import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { warn } from 'tauri-plugin-log-api';
 import { useTheme } from 'next-themes';
 
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from './utils/store';
 import { useConfig } from './hooks';
-import { loadLanguage } from './i18n';
+import { changeLanguage } from './i18n';
 import './style.css';
 
 // 每个窗口单独成 chunk：划词窗口不该为了弹出一个 350x420 的小窗
@@ -28,7 +27,6 @@ export default function App() {
     const [appFallbackFont] = useConfig('app_fallback_font', 'default');
     const [appFontSize] = useConfig('app_font_size', 16);
     const { setTheme } = useTheme();
-    const { i18n } = useTranslation();
 
     useEffect(() => {
         store.load();
@@ -94,10 +92,7 @@ export default function App() {
 
     useEffect(() => {
         if (appLanguage !== null) {
-            // en / zh_cn 是内联的，其余语言的资源要先按需加载再切
-            loadLanguage(appLanguage).then(() => {
-                i18n.changeLanguage(appLanguage);
-            });
+            void changeLanguage(appLanguage);
         }
     }, [appLanguage]);
 
