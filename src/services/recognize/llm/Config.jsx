@@ -1,5 +1,5 @@
 import { INSTANCE_NAME_CONFIG_KEY } from '../../../utils/service_instance';
-import { Input, Button, Textarea, Select, SelectItem } from '@nextui-org/react';
+import { Input, Button, Switch, Textarea, Select, SelectItem } from '@nextui-org/react';
 import { DropdownTrigger, DropdownMenu, DropdownItem, Dropdown } from '@nextui-org/react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -37,9 +37,22 @@ export function Config(props) {
             model: 'Qwen/Qwen3-VL-8B-Instruct',
             prompt: defaultPrompt,
             requestArguments: defaultRequestArguments,
+            // 默认开流式：整屏文字攒完再显示要干等好几秒，边收边显第一行通常一秒内就到
+            stream: true,
+            // 默认强制关闭思考：OCR 只要照抄图里的字，思考链是在首字之前空烧 token
+            thinkingMode: 'off',
         },
         { sync: false }
     );
+    // 兼容旧版本：这两个字段是后加的，老实例里读出来是 undefined
+    if (config) {
+        if (config.stream === undefined) {
+            setConfig({ ...config, stream: true });
+        }
+        if (config.thinkingMode === undefined) {
+            setConfig({ ...config, thinkingMode: 'off' });
+        }
+    }
     const [isLoading, setIsLoading] = useState(false);
     const [modelList, setModelList] = useState([]);
     const [isFetchingModels, setIsFetchingModels] = useState(false);
@@ -193,6 +206,42 @@ export function Config(props) {
                     )}
                 </div>
                 <p className='text-[10px] text-default-700'>{t('services.recognize.llm.model_description')}</p>
+                <div className='config-item'>
+                    <Switch
+                        isSelected={config['stream'] !== false}
+                        onValueChange={(value) => {
+                            setConfig({ ...config, stream: value });
+                        }}
+                        classNames={{
+                            base: 'flex flex-row-reverse justify-between w-full max-w-full',
+                        }}
+                    >
+                        {t('services.recognize.llm.stream')}
+                    </Switch>
+                </div>
+                <p className='text-[10px] text-default-700'>{t('services.recognize.llm.stream_description')}</p>
+                <div className='config-item'>
+                    <h3 className='my-auto'>{t('services.recognize.llm.thinking')}</h3>
+                    <Dropdown>
+                        <DropdownTrigger>
+                            <Button variant='bordered'>
+                                {t(`services.recognize.llm.thinking_${config.thinkingMode ?? 'off'}`)}
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                            autoFocus='first'
+                            aria-label='thinking mode'
+                            onAction={(key) => {
+                                setConfig({ ...config, thinkingMode: key });
+                            }}
+                        >
+                            <DropdownItem key='off'>{t('services.recognize.llm.thinking_off')}</DropdownItem>
+                            <DropdownItem key='auto'>{t('services.recognize.llm.thinking_auto')}</DropdownItem>
+                            <DropdownItem key='on'>{t('services.recognize.llm.thinking_on')}</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
+                <p className='text-[10px] text-default-700'>{t('services.recognize.llm.thinking_description')}</p>
                 <h3 className='my-auto'>Prompt</h3>
                 <p className='text-[10px] text-default-700'>{t('services.recognize.llm.prompt_description')}</p>
                 <div className='config-item'>

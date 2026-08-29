@@ -49,7 +49,16 @@ export default function TextArea(props) {
                 let id = nanoid();
                 recognizeId = id;
                 builtinServices[serviceName]
-                    .recognize(base64, builtinServices[serviceName].Language[language], { config: instanceConfig })
+                    .recognize(base64, builtinServices[serviceName].Language[language], {
+                        config: instanceConfig,
+                        // 流式识别的中间结果：顶掉骨架屏，让已经出来的行先显示。
+                        // 删换行、自动复制这些收尾动作留给下面的 then，等全文到齐再做。
+                        setResult: (v) => {
+                            if (recognizeId !== id) return;
+                            setText(v);
+                            setLoading(false);
+                        },
+                    })
                     .then(
                         (v) => {
                             if (recognizeId !== id) return;

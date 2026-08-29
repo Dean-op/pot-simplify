@@ -197,7 +197,14 @@
                     "api_key": "API KEY",
                     "model": "Model",
                     "model_description": "Requires a vision model that accepts image input (e.g. the Qwen3-VL family). Text-only models cannot read images.",
-                    "prompt_description": "$lang is replaced with the English name of the selected recognition language, or Auto when set to automatic."
+                    "prompt_description": "$lang is replaced with the English name of the selected recognition language, or Auto when set to automatic.",
+                    "stream": "Stream Mode",
+                    "stream_description": "Shows text as it arrives, so the first line usually appears within a second instead of after the whole image is done. A few gateways do not support streaming for vision models — turn it off if you get an error.",
+                    "thinking": "Thinking Mode",
+                    "thinking_off": "Force Off (Faster)",
+                    "thinking_auto": "Model Default",
+                    "thinking_on": "Force On",
+                    "thinking_description": "OCR only copies the text in the image, so a reasoning chain just burns hundreds of tokens before the first character shows up; forced off by default. Only applies to DeepSeek, Alibaba Bailian and SiliconFlow; for other gateways add the parameter yourself in Request Arguments below."
                 }
             },
             "provider_preset": "Provider Preset",

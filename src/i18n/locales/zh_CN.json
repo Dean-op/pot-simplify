@@ -197,7 +197,14 @@
                     "api_key": "API KEY",
                     "model": "模型",
                     "model_description": "需要支持图片输入的视觉模型（如 Qwen3-VL 系列）。普通文本模型无法识别图片。",
-                    "prompt_description": "$lang 会被替换成所选识别语言的英文名称，选择「自动」时为 Auto。"
+                    "prompt_description": "$lang 会被替换成所选识别语言的英文名称，选择「自动」时为 Auto。",
+                    "stream": "流式输出",
+                    "stream_description": "边收边显示，第一行文字通常一秒内就出来，不用等整张图识别完。个别网关的视觉模型不支持流式，报错就关掉它。",
+                    "thinking": "思考模式",
+                    "thinking_off": "强制关闭（更快）",
+                    "thinking_auto": "跟随模型默认",
+                    "thinking_on": "强制开启",
+                    "thinking_description": "识别只是照抄图里的文字，思考链只会在出字之前白烧几百个 token，默认强制关闭。仅对 DeepSeek 官方、阿里百炼、硅基流动生效，其他网关请在下方 Request Arguments 里自行添加参数。"
                 }
             },
             "provider_preset": "提供商预设",
