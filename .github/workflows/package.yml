@@ -2,7 +2,11 @@ name: Package
 on:
     push:
         branches: [master]
-permissions: write-all
+    # 手动触发，不用为了拿一个安装包专门推一次 commit
+    workflow_dispatch:
+# 只需要建 Release 和上传产物的权限
+permissions:
+    contents: write
 
 jobs:
     change-version:
@@ -39,32 +43,6 @@ jobs:
                   path: ./*
                   include-hidden-files: true
                   if-no-files-found: error
-
-    build-extension:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Build SnipDo
-              run: |
-                  cd .scripts/snipdo
-                  bash ./build.sh
-                  cd ../..
-            - name: Upload Artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: pot.pbar
-                  path: .scripts/snipdo/pot.pbar
-                  if-no-files-found: error
-            - name: Upload Release
-              if: startsWith(github.ref, 'refs/tags')
-              uses: softprops/action-gh-release@v1
-              with:
-                  body_path: CHANGELOG
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  files: .scripts/snipdo/pot.pbar
 
     build-for-windows:
         needs: change-version
@@ -107,10 +85,7 @@ jobs:
             - name: Code Format
               run: pnpm prettier --write .
             - name: Build and Package
-              run: |
-                  $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-                  $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
-                  pnpm tauri build -b nsis --target ${{ matrix.target }}
+              run: pnpm tauri build -b nsis --target ${{ matrix.target }}
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -121,7 +96,7 @@ jobs:
               if: startsWith(github.ref, 'refs/tags')
               uses: softprops/action-gh-release@v1
               with:
-                  body_path: CHANGELOG
+                  generate_release_notes: true
                   token: ${{ secrets.GITHUB_TOKEN }}
                   files: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
 
@@ -176,12 +151,8 @@ jobs:
                   Rename-Item .\src-tauri\webview.${{ matrix.arch }}.json tauri.windows.conf.json
             - name: Build and Package
               run: |
-                  $env:TAURI_PRIVATE_KEY="${{ secrets.TAURI_PRIVATE_KEY }}"
-                  $env:TAURI_KEY_PASSWORD="${{ secrets.TAURI_KEY_PASSWORD }}"
                   pnpm tauri build -b nsis --target ${{ matrix.target }}
                   Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.exe pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.exe
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip
-                  Rename-Item .\src-tauri\target\${{ matrix.target }}\release\bundle\nsis\pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}-setup.nsis.zip.sig pot_${{needs.change-version.outputs.version}}_${{ matrix.arch }}_fix_webview2_runtime-setup.nsis.zip.sig
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -192,47 +163,6 @@ jobs:
               if: startsWith(github.ref, 'refs/tags')
               uses: softprops/action-gh-release@v1
               with:
-                  body_path: CHANGELOG
+                  generate_release_notes: true
                   token: ${{ secrets.GITHUB_TOKEN }}
                   files: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
-
-    trigger-docs-update:
-        needs: [build-for-windows]
-        runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags')
-        steps:
-            - name: Trigger update
-              run: |
-                  curl -X POST https://api.github.com/repos/pot-app/pot-docs/dispatches \
-                    -H "Accept: application/vnd.github.everest-preview+json" \
-                    -H "Authorization: token ${{ secrets.TOKEN }}" \
-                    -d '{"event_type": "plugins-updated"}'
-
-    winget:
-        name: Update WinGet Package
-        needs: build-for-windows
-        runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags')
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-            - name: Install git
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y git
-            - name: Get Tag Name
-              run: |
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> $GITHUB_ENV
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')"
-            - name: Upload WinGet
-              if: startsWith(github.ref, 'refs/tags')
-              uses: vedantmgoyal2009/winget-releaser@v2
-              with:
-                  identifier: Pylogmon.pot
-                  version: ${{env.VERSION}}
-                  installers-regex: '\.exe$'
-                  token: ${{ secrets.TOKEN }}
-                  fork-user: Pylogmon
-              continue-on-error: true
