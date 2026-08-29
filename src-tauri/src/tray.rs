@@ -43,7 +43,6 @@ pub fn update_tray(app_handle: tauri::AppHandle, mut language: String, mut copy_
     tray_handle
         .set_menu(tray_menu(tray_labels(language.as_str())))
         .unwrap();
-    #[cfg(not(target_os = "linux"))]
     tray_handle
         .set_tooltip(&format!("pot {}", app_handle.package_info().version))
         .unwrap();
@@ -84,7 +83,6 @@ pub fn update_tray(app_handle: tauri::AppHandle, mut language: String, mut copy_
 
 pub fn tray_event_handler<'a>(app: &'a AppHandle, event: SystemTrayEvent) {
     match event {
-        #[cfg(target_os = "windows")]
         SystemTrayEvent::LeftClick { .. } => on_tray_click(),
         SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
             "input_translate" => on_input_translate_click(),
@@ -105,7 +103,6 @@ pub fn tray_event_handler<'a>(app: &'a AppHandle, event: SystemTrayEvent) {
     }
 }
 
-#[cfg(target_os = "windows")]
 fn on_tray_click() {
     let event = match get("tray_click_event") {
         Some(v) => v.as_str().unwrap().to_string(),

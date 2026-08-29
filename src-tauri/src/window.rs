@@ -1,18 +1,12 @@
-#[cfg(target_os = "macos")]
-use std::fs;
-
 use crate::config::get;
 use crate::config::set;
 use crate::StringWrapper;
 use crate::APP;
-#[cfg(target_os = "macos")]
-use dirs::cache_dir;
 use log::{info, warn};
 use tauri::Manager;
 use tauri::Monitor;
 use tauri::Window;
 use tauri::WindowBuilder;
-#[cfg(any(target_os = "macos", target_os = "windows"))]
 use window_shadows::set_shadow;
 
 // Get daemon window instance
@@ -87,7 +81,7 @@ fn build_window(label: &str, title: &str) -> (Window, bool) {
         }
         None => {
             info!("Window not existence, Creating new window: {}", label);
-            let mut builder = tauri::WindowBuilder::new(
+            let window = tauri::WindowBuilder::new(
                 app_handle,
                 label,
                 tauri::WindowUrl::App("index.html".into()),
@@ -96,22 +90,13 @@ fn build_window(label: &str, title: &str) -> (Window, bool) {
             .additional_browser_args("--disable-web-security")
             .focused(true)
             .title(title)
-            .visible(false);
-
-            #[cfg(target_os = "macos")]
-            {
-                builder = builder
-                    .title_bar_style(tauri::TitleBarStyle::Overlay)
-                    .hidden_title(true);
-            }
-            #[cfg(not(target_os = "macos"))]
-            {
-                builder = builder.transparent(true).decorations(false);
-            }
-            let window = builder.build().unwrap();
+            .visible(false)
+            .transparent(true)
+            .decorations(false)
+            .build()
+            .unwrap();
 
             if label != "screenshot" {
-                #[cfg(not(target_os = "linux"))]
                 set_shadow(&window, true).unwrap_or_default();
             }
             let _ = window.current_monitor();
@@ -320,90 +305,29 @@ pub fn recognize_window() {
     window.emit("new_image", "").unwrap();
 }
 
-#[cfg(not(target_os = "macos"))]
 fn screenshot_window() -> Window {
     let (window, _exists) = build_window("screenshot", "Screenshot");
 
     window.set_skip_taskbar(true).unwrap();
-    #[cfg(target_os = "macos")]
-    {
-        let monitor = window.current_monitor().unwrap().unwrap();
-        let size = monitor.size();
-        window.set_decorations(false).unwrap();
-        window.set_size(*size).unwrap();
-    }
-
-    #[cfg(not(target_os = "macos"))]
     window.set_fullscreen(true).unwrap();
-
     window.set_always_on_top(true).unwrap();
     window
 }
 
 pub fn ocr_recognize() {
-    #[cfg(target_os = "macos")]
-    {
-        let app_handle = APP.get().unwrap();
-        let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-        app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
-        if !app_cache_dir_path.exists() {
-            // 创建目录
-            fs::create_dir_all(&app_cache_dir_path).expect("Create Cache Dir Failed");
-        }
-        app_cache_dir_path.push("pot_screenshot_cut.png");
-
-        let path = app_cache_dir_path.to_string_lossy().replace("\\\\?\\", "");
-        println!("Screenshot path: {}", path);
-        if let Ok(_output) = std::process::Command::new("/usr/sbin/screencapture")
-            .arg("-i")
-            .arg("-r")
-            .arg(path)
-            .output()
-        {
-            recognize_window();
-        }
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let window = screenshot_window();
-        let window_ = window.clone();
-        window.listen("success", move |event| {
-            recognize_window();
-            window_.unlisten(event.id())
-        });
-    }
+    let window = screenshot_window();
+    let window_ = window.clone();
+    window.listen("success", move |event| {
+        recognize_window();
+        window_.unlisten(event.id())
+    });
 }
-pub fn ocr_translate() {
-    #[cfg(target_os = "macos")]
-    {
-        let app_handle = APP.get().unwrap();
-        let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-        app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
-        if !app_cache_dir_path.exists() {
-            // 创建目录
-            fs::create_dir_all(&app_cache_dir_path).expect("Create Cache Dir Failed");
-        }
-        app_cache_dir_path.push("pot_screenshot_cut.png");
 
-        let path = app_cache_dir_path.to_string_lossy().replace("\\\\?\\", "");
-        println!("Screenshot path: {}", path);
-        if let Ok(_output) = std::process::Command::new("/usr/sbin/screencapture")
-            .arg("-i")
-            .arg("-r")
-            .arg(path)
-            .output()
-        {
-            image_translate();
-            ();
-        }
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let window = screenshot_window();
-        let window_ = window.clone();
-        window.listen("success", move |event| {
-            image_translate();
-            window_.unlisten(event.id())
-        });
-    }
+pub fn ocr_translate() {
+    let window = screenshot_window();
+    let window_ = window.clone();
+    window.listen("success", move |event| {
+        image_translate();
+        window_.unlisten(event.id())
+    });
 }
