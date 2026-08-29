@@ -152,14 +152,15 @@ export default function Translate() {
     }, [rememberWindowSize]);
 
     const loadServiceInstanceConfigMap = async () => {
+        // 原来是 for 循环里一个一个 await，翻译服务加识别服务通常有五六个，
+        // 就是五六次串行 IPC，而整个翻译窗口都得等这个 map 到齐才渲染
+        const keyList = [...translateServiceInstanceList, ...recognizeServiceInstanceList];
+        const configList = await Promise.all(keyList.map((key) => store.get(key)));
         const config = {};
-        for (const serviceInstanceKey of translateServiceInstanceList) {
-            config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
-        }
-        for (const serviceInstanceKey of recognizeServiceInstanceList) {
-            config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
-        }
-        setServiceInstanceConfigMap({ ...config });
+        keyList.forEach((key, i) => {
+            config[key] = configList[i] ?? {};
+        });
+        setServiceInstanceConfigMap(config);
     };
     useEffect(() => {
         if (translateServiceInstanceList !== null && recognizeServiceInstanceList !== null) {

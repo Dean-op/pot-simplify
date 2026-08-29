@@ -1,6 +1,8 @@
 export const info = {
     name: 'llm',
     icon: 'logo/openai.svg',
+    // 要把图片本身发给模型，识别之前必须先把 base64 取过来
+    needImageData: true,
 };
 
 // 值会被塞进 prompt 的 $lang 占位符，所以用英文语言名而不是内部语种码

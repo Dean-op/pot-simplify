@@ -7,13 +7,14 @@ import { CgSpaceBetween } from 'react-icons/cg';
 import { MdContentCopy } from 'react-icons/md';
 import { MdSmartButton } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { invoke } from '@tauri-apps/api';
 import { nanoid } from 'nanoid';
 
 import { getServiceName } from '../../../utils/service_instance';
 import { currentServiceInstanceKeyAtom, languageAtom, recognizeFlagAtom } from '../ControlArea';
 import * as builtinServices from '../../../services/recognize';
 import { useConfig } from '../../../hooks';
-import { base64Atom } from '../ImageArea';
+import { imageFlagAtom } from '../ImageArea';
 
 export const textAtom = atom();
 let recognizeId = 0;
@@ -26,7 +27,7 @@ export default function TextArea(props) {
     const recognizeFlag = useAtomValue(recognizeFlagAtom);
     const currentServiceInstanceKey = useAtomValue(currentServiceInstanceKeyAtom);
     const language = useAtomValue(languageAtom);
-    const base64 = useAtomValue(base64Atom);
+    const imageFlag = useAtomValue(imageFlagAtom);
     const [loading, setLoading] = useState(false);
     const [text, setText] = useAtom(textAtom);
     const [error, setError] = useState('');
@@ -36,7 +37,7 @@ export default function TextArea(props) {
         setText('');
         setError('');
         if (
-            base64 !== '' &&
+            imageFlag > 0 &&
             currentServiceInstanceKey &&
             autoCopy !== null &&
             deleteNewline !== null &&
@@ -45,20 +46,26 @@ export default function TextArea(props) {
             setLoading(true);
             const instanceConfig = serviceInstanceConfigMap[currentServiceInstanceKey] ?? {};
             const serviceName = getServiceName(currentServiceInstanceKey);
-            if (language in builtinServices[serviceName].Language) {
+            const service = builtinServices[serviceName];
+            if (language in service.Language) {
                 let id = nanoid();
                 recognizeId = id;
-                builtinServices[serviceName]
-                    .recognize(base64, builtinServices[serviceName].Language[language], {
-                        config: instanceConfig,
-                        // 流式识别的中间结果：顶掉骨架屏，让已经出来的行先显示。
-                        // 删换行、自动复制这些收尾动作留给下面的 then，等全文到齐再做。
-                        setResult: (v) => {
-                            if (recognizeId !== id) return;
-                            setText(v);
-                            setLoading(false);
-                        },
-                    })
+                // 只有要把图片发给模型的服务才需要 base64。系统 OCR 是 Rust 侧
+                // 自己读缓存里的 PNG，白搬一趟几 MB 的 base64 纯属浪费。
+                const imageData = service.info.needImageData ? invoke('get_base64') : Promise.resolve('');
+                imageData
+                    .then((base64) =>
+                        service.recognize(base64, service.Language[language], {
+                            config: instanceConfig,
+                            // 流式识别的中间结果：顶掉骨架屏，让已经出来的行先显示。
+                            // 删换行、自动复制这些收尾动作留给下面的 then，等全文到齐再做。
+                            setResult: (v) => {
+                                if (recognizeId !== id) return;
+                                setText(v);
+                                setLoading(false);
+                            },
+                        })
+                    )
                     .then(
                         (v) => {
                             if (recognizeId !== id) return;
@@ -87,7 +94,7 @@ export default function TextArea(props) {
                 setLoading(false);
             }
         }
-    }, [base64, currentServiceInstanceKey, language, recognizeFlag, autoCopy, deleteNewline, hideWindow]);
+    }, [imageFlag, currentServiceInstanceKey, language, recognizeFlag, autoCopy, deleteNewline, hideWindow]);
 
     return (
         <Card

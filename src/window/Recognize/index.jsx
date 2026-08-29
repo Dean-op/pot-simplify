@@ -50,11 +50,14 @@ export default function Recognize() {
     const [serviceInstanceConfigMap, setServiceInstanceConfigMap] = useState(null);
 
     const loadServiceInstanceConfigMap = async () => {
+        // 原来是 for 循环里一个一个 await，服务多了就是几次串行 IPC，
+        // 而识别窗口整棵树都得等这个 map 到齐才渲染
+        const configList = await Promise.all(serviceInstanceList.map((key) => store.get(key)));
         const config = {};
-        for (const serviceInstanceKey of serviceInstanceList) {
-            config[serviceInstanceKey] = (await store.get(serviceInstanceKey)) ?? {};
-        }
-        setServiceInstanceConfigMap({ ...config });
+        serviceInstanceList.forEach((key, i) => {
+            config[key] = configList[i] ?? {};
+        });
+        setServiceInstanceConfigMap(config);
     };
     useEffect(() => {
         if (serviceInstanceList !== null) {

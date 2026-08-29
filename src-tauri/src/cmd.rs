@@ -2,8 +2,34 @@ use crate::config::StoreWrapper;
 use crate::error::Error;
 use crate::StringWrapper;
 use crate::APP;
-use log::{error, info};
+use log::{error, info, warn};
 use tauri::Manager;
+
+// 截图缓存都放在 %LOCALAPPDATA%\<identifier>\ 下
+fn cache_file(app_handle: &tauri::AppHandle, name: &str) -> std::path::PathBuf {
+    use dirs::cache_dir;
+    let mut path = cache_dir().expect("Get Cache Dir Failed");
+    path.push(&app_handle.config().tauri.bundle.identifier);
+    path.push(name);
+    path
+}
+
+// 这两个 PNG 只给本机的识别窗口和剪贴板用，image 默认的最高压缩率
+// 能在一张大图上吃掉上百毫秒，纯属浪费，统一用最快档。
+fn save_png_fast(path: &std::path::Path, img: &image::RgbaImage) -> Result<(), image::ImageError> {
+    use image::codecs::png::{CompressionType, FilterType, PngEncoder};
+    use image::{ExtendedColorType, ImageEncoder};
+    use std::fs::File;
+    use std::io::BufWriter;
+
+    let writer = BufWriter::new(File::create(path)?);
+    PngEncoder::new_with_quality(writer, CompressionType::Fast, FilterType::Adaptive).write_image(
+        img.as_raw(),
+        img.width(),
+        img.height(),
+        ExtendedColorType::Rgba8,
+    )
+}
 
 #[tauri::command]
 pub fn get_text(state: tauri::State<StringWrapper>) -> String {
@@ -17,71 +43,85 @@ pub fn reload_store() {
     store.load().unwrap();
 }
 
-#[tauri::command]
+// async：不加的话命令跑在主线程上，裁图的这几十毫秒会把事件循环堵住，
+// 识别窗口的创建只能排在后面。
+#[tauri::command(async)]
 pub fn cut_image(left: u32, top: u32, width: u32, height: u32, app_handle: tauri::AppHandle) {
-    use dirs::cache_dir;
-    use image::GenericImage;
+    use crate::screenshot::LAST_SCREENSHOT;
+    use image::{imageops, RgbaImage};
     info!("Cut image: {}x{}+{}+{}", width, height, left, top);
-    let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
-    app_cache_dir_path.push("pot_simplify_screenshot.png");
-    if !app_cache_dir_path.exists() {
-        return;
-    }
-    let mut img = match image::open(&app_cache_dir_path) {
-        Ok(v) => v,
-        Err(e) => {
-            error!("{:?}", e.to_string());
-            return;
+
+    // 优先用 screenshot() 留在内存里的原始像素；拿不到（比如中途重启过）
+    // 再退回去解那张全屏 PNG
+    let cached = LAST_SCREENSHOT
+        .lock()
+        .unwrap()
+        .take()
+        .and_then(|(w, h, rgba)| RgbaImage::from_raw(w, h, rgba));
+    let full = match cached {
+        Some(v) => v,
+        None => {
+            warn!("Screenshot pixels not cached, decoding png instead");
+            let path = cache_file(&app_handle, "pot_simplify_screenshot.png");
+            if !path.exists() {
+                return;
+            }
+            match image::open(&path) {
+                Ok(v) => v.to_rgba8(),
+                Err(e) => {
+                    error!("{:?}", e.to_string());
+                    return;
+                }
+            }
         }
     };
-    let img2 = img.sub_image(left, top, width, height);
-    app_cache_dir_path.pop();
-    app_cache_dir_path.push("pot_simplify_screenshot_cut.png");
-    match img2.to_image().save(&app_cache_dir_path) {
-        Ok(_) => {}
-        Err(e) => {
-            error!("{:?}", e.to_string());
-        }
+
+    // 越界保护：框选坐标是前端拿 dpi 换算出来的，取整之后可能多出一两个像素
+    if left >= full.width() || top >= full.height() {
+        error!("Cut area out of screen: {}x{}", full.width(), full.height());
+        return;
+    }
+    let width = width.min(full.width() - left);
+    let height = height.min(full.height() - top);
+    if width == 0 || height == 0 {
+        return;
+    }
+
+    let cut = imageops::crop_imm(&full, left, top, width, height).to_image();
+    let path = cache_file(&app_handle, "pot_simplify_screenshot_cut.png");
+    if let Err(e) = save_png_fast(&path, &cut) {
+        error!("{:?}", e.to_string());
     }
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn get_base64(app_handle: tauri::AppHandle) -> String {
     use base64::{engine::general_purpose, Engine as _};
-    use dirs::cache_dir;
-    use std::fs::File;
-    use std::io::Read;
-    let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
-    app_cache_dir_path.push("pot_simplify_screenshot_cut.png");
-    if !app_cache_dir_path.exists() {
+    use std::fs;
+
+    let path = cache_file(&app_handle, "pot_simplify_screenshot_cut.png");
+    if !path.exists() {
         return "".to_string();
     }
-    let mut file = File::open(app_cache_dir_path).unwrap();
-    let mut vec = Vec::new();
-    match file.read_to_end(&mut vec) {
-        Ok(_) => {}
+    // 直接读 cut_image 刚写下去的 PNG：省一次解码 + 重新编码
+    let vec = match fs::read(&path) {
+        Ok(v) => v,
         Err(e) => {
             error!("{:?}", e.to_string());
             return "".to_string();
         }
-    }
-    let base64 = general_purpose::STANDARD.encode(&vec);
-    base64.replace("\r\n", "")
+    };
+    general_purpose::STANDARD.encode(&vec)
 }
 
 #[tauri::command]
 pub fn copy_img(app_handle: tauri::AppHandle, width: usize, height: usize) -> Result<(), Error> {
     use arboard::{Clipboard, ImageData};
-    use dirs::cache_dir;
     use image::ImageReader;
     use std::borrow::Cow;
 
-    let mut app_cache_dir_path = cache_dir().expect("Get Cache Dir Failed");
-    app_cache_dir_path.push(&app_handle.config().tauri.bundle.identifier);
-    app_cache_dir_path.push("pot_simplify_screenshot_cut.png");
-    let data = ImageReader::open(app_cache_dir_path)?.decode()?;
+    let path = cache_file(&app_handle, "pot_simplify_screenshot_cut.png");
+    let data = ImageReader::open(path)?.decode()?;
 
     let img = ImageData {
         width,

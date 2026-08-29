@@ -1,6 +1,8 @@
 export const info = {
     name: 'system',
     icon: `system`,
+    // Rust 侧直接读缓存目录里的 PNG，不用前端把几 MB 的 base64 再搬一趟
+    needImageData: false,
 };
 
 export enum Language {

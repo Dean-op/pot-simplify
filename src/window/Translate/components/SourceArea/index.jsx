@@ -77,13 +77,15 @@ export default function SourceArea(props) {
             setSourceText('', true);
         } else if (text === '[IMAGE_TRANSLATE]') {
             setWindowType('[IMAGE_TRANSLATE]');
-            const base64 = await invoke('get_base64');
             const serviceInstanceKey = recognizeServiceList[0];
             const serviceName = getServiceName(serviceInstanceKey);
-            if (recognizeLanguage in recognizeServices[serviceName].Language) {
+            const service = recognizeServices[serviceName];
+            // 只有要把图片发给模型的服务才需要 base64，系统 OCR 在 Rust 侧自己读 PNG
+            const base64 = service.info.needImageData ? await invoke('get_base64') : '';
+            if (recognizeLanguage in service.Language) {
                 const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
-                recognizeServices[serviceName]
-                    .recognize(base64, recognizeServices[serviceName].Language[recognizeLanguage], {
+                service
+                    .recognize(base64, service.Language[recognizeLanguage], {
                         config: instanceConfig,
                     })
                     .then(
