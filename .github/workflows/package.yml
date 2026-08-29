@@ -19,22 +19,30 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Install git
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y git
+            # 版本号优先取最近的 tag，没有 tag 就沿用 package.json 里的值。
+            # 上游原来是直接 `git describe --tags`，仓库里一个 tag 都没有时它会失败，
+            # 但外层是 echo，步骤照样绿灯，结果把空字符串写进 tauri.conf.json，
+            # 到 tauri build 才报 `package > version` must be a semver string。
             - id: outputstep
               run: |
-                  echo "VERSION=$(git describe --tags | sed 's/-[0-9]*-.*//g')" >> "$GITHUB_OUTPUT"
+                  VERSION=$(git describe --tags --abbrev=0 2>/dev/null || true)
+                  VERSION=${VERSION#v}
+                  if [ -z "$VERSION" ]; then
+                      VERSION=$(node -p "require('./package.json').version")
+                      echo "没有 tag，沿用 package.json 里的版本号 $VERSION"
+                  fi
+                  if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+                      echo "::error::版本号 '$VERSION' 不是 x.y.z 形式，tauri 会拒绝"
+                      exit 1
+                  fi
+                  echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
             - name: Change Version for Windows
+              env:
+                  VERSION: ${{ steps.outputstep.outputs.VERSION }}
               run: |
-                  sed -i "s/\"version\":.*/\"version\": \"$(git describe --tags | sed 's/-[0-9]*-.*//g')\",/g" package.json
-
-                  sed -i "s/\"version\":.*/\"version\": \"$(git describe --tags | sed 's/-[0-9]*-.*//g')\"/g" src-tauri/tauri.conf.json
-
-                  sed -i "s/version = \"0.0.0\"/version = \"$(git describe --tags | sed 's/-[0-9]*-.*//g')\"/g" src-tauri/Cargo.toml
-
-                  echo $(git describe --tags | sed 's/-[0-9]*-.*//g')
+                  sed -i "s/\"version\":.*/\"version\": \"$VERSION\",/" package.json
+                  sed -i "s/\"version\":.*/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
+                  sed -i "s/version = \"0.0.0\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
 
             - name: Upload Artifacts for Windows
               uses: actions/upload-artifact@v4
