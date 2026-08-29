@@ -1,61 +1,47 @@
+use lingua::{Language, LanguageDetector, LanguageDetectorBuilder};
+use once_cell::sync::Lazy;
+
+// lingua 的 Language 枚举变体是由 Cargo.toml 里的 feature 决定的，
+// 所以这个列表必须和 features 一致；下面 match 能穷尽也是靠这一点。
+// 增删语种时：Cargo.toml features、这个数组、match 分支三处要一起改。
+const LANGUAGES: [Language; 22] = [
+    Language::Chinese,
+    Language::Japanese,
+    Language::English,
+    Language::Korean,
+    Language::French,
+    Language::Spanish,
+    Language::German,
+    Language::Russian,
+    Language::Italian,
+    Language::Portuguese,
+    Language::Turkish,
+    Language::Arabic,
+    Language::Vietnamese,
+    Language::Thai,
+    Language::Indonesian,
+    Language::Malay,
+    Language::Hindi,
+    Language::Mongolian,
+    Language::Bokmal,
+    Language::Nynorsk,
+    Language::Persian,
+    Language::Ukrainian,
+];
+
+// 原来 lang_detect 每次调用都 build 一遍检测器，划词翻译每输入一次
+// 就重建 22 个语种的模型；init_lang_detect 里预热出来的那个又是局部
+// 变量，用完就丢。这里做成全局静态，预热和调用共用同一个实例。
+static DETECTOR: Lazy<LanguageDetector> =
+    Lazy::new(|| LanguageDetectorBuilder::from_languages(&LANGUAGES).build());
+
 pub fn init_lang_detect() {
-    // https://crates.io/crates/lingua
-    use lingua::{Language, LanguageDetectorBuilder};
-    let languages = vec![
-        Language::Chinese,
-        Language::Japanese,
-        Language::English,
-        Language::Korean,
-        Language::French,
-        Language::Spanish,
-        Language::German,
-        Language::Russian,
-        Language::Italian,
-        Language::Portuguese,
-        Language::Turkish,
-        Language::Arabic,
-        Language::Vietnamese,
-        Language::Thai,
-        Language::Indonesian,
-        Language::Malay,
-        Language::Hindi,
-        Language::Mongolian,
-        Language::Bokmal,
-        Language::Nynorsk,
-        Language::Persian,
-        Language::Ukrainian,
-    ];
-    let detector = LanguageDetectorBuilder::from_languages(&languages).build();
-    let _ = detector.detect_language_of("Hello Language");
+    let _ = DETECTOR.detect_language_of("Hello Language");
 }
+
 #[tauri::command]
 pub fn lang_detect(text: &str) -> Result<&str, ()> {
-    use lingua::{Language, LanguageDetectorBuilder};
-    let languages = vec![
-        Language::Chinese,
-        Language::Japanese,
-        Language::English,
-        Language::Korean,
-        Language::French,
-        Language::Spanish,
-        Language::German,
-        Language::Russian,
-        Language::Italian,
-        Language::Portuguese,
-        Language::Turkish,
-        Language::Arabic,
-        Language::Vietnamese,
-        Language::Thai,
-        Language::Indonesian,
-        Language::Malay,
-        Language::Hindi,
-        Language::Mongolian,
-        Language::Bokmal,
-        Language::Nynorsk,
-        Language::Persian,
-    ];
-    let detector = LanguageDetectorBuilder::from_languages(&languages).build();
-    if let Some(lang) = detector.detect_language_of(text) {
+    if let Some(lang) = DETECTOR.detect_language_of(text) {
         match lang {
             Language::Chinese => Ok("zh_cn"),
             Language::Japanese => Ok("ja"),
@@ -81,6 +67,6 @@ pub fn lang_detect(text: &str) -> Result<&str, ()> {
             Language::Ukrainian => Ok("uk"),
         }
     } else {
-        return Ok("en");
+        Ok("en")
     }
 }
