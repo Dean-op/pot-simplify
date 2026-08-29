@@ -30,7 +30,11 @@ log = "0.4"
 screenshots = "=0.7.2"
 base64 = "0.22"
 arboard = "3.4"
-lingua = { version = "1.6.2", default-features = false, features = ["chinese", "japanese", "english", "korean", "french", "spanish", "german", "russian", "italian", "portuguese", "turkish", "arabic", "vietnamese", "thai", "indonesian", "malay", "hindi", "mongolian", "persian", "nynorsk", "bokmal", "ukrainian"] }
+# 语种只留中日英（Dean 的常用语言）。模型是 include_dir! 嵌进二进制的
+# brotli 数据，22 个语种合计 20.12 MB，这三个 1.18 MB。
+# 改这里必须同步改 src/lang_detect.rs 的 LANGUAGES 数组和 match 分支——
+# Language 枚举的变体就是由这些 feature 决定的。
+lingua = { version = "1.6.2", default-features = false, features = ["chinese", "japanese", "english"] }
 thiserror = "1.0"
 font-kit = "0.14.2"
 image = "0.25.4"

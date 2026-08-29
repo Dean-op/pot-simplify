@@ -2820,28 +2820,9 @@ dependencies = [
  "fraction",
  "include_dir",
  "itertools",
- "lingua-arabic-language-model",
- "lingua-bokmal-language-model",
  "lingua-chinese-language-model",
  "lingua-english-language-model",
- "lingua-french-language-model",
- "lingua-german-language-model",
- "lingua-hindi-language-model",
- "lingua-indonesian-language-model",
- "lingua-italian-language-model",
  "lingua-japanese-language-model",
- "lingua-korean-language-model",
- "lingua-malay-language-model",
- "lingua-mongolian-language-model",
- "lingua-nynorsk-language-model",
- "lingua-persian-language-model",
- "lingua-portuguese-language-model",
- "lingua-russian-language-model",
- "lingua-spanish-language-model",
- "lingua-thai-language-model",
- "lingua-turkish-language-model",
- "lingua-ukrainian-language-model",
- "lingua-vietnamese-language-model",
  "maplit",
  "once_cell",
  "rayon",
@@ -2852,24 +2833,6 @@ dependencies = [
  "strum",
  "strum_macros",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "lingua-arabic-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ada75100728990b05bacaec7693efebf0c8b911599ac0c082cb4ed576bf494d"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-bokmal-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a9215ee6bbe6d37222dc5dbd9d1577389810011cb8afbef6155e71a11fa5cb9"
-dependencies = [
- "include_dir",
 ]
 
 [[package]]
@@ -2891,163 +2854,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "lingua-french-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba406de05309b212790036e576aee4b1a71ce62b77fbd084df5bc8d7c624866f"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-german-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dd4041d542b6512d415c0ea6979333e5e88698b966dda7b9bf06029bf690a13"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-hindi-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f63659e514fa8c706d2ed0d7a04b98adb05b8c8d4bc37e3d12edb9d35ce24fd0"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-indonesian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc06b8937f6adaad76b28fd009cbfaa6f876ebe5fa887d96dccd1dff2d21d9ad"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-italian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c6e138047ac4d681e419e37ad9e383878652ac19e67056ff16085d4cc82e590"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
 name = "lingua-japanese-language-model"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b34b94aa96a1bc0838ddda2c7912d0ebd7256bb21e7a2974e4dd8b186df501a8"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-korean-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35c47aa5e5dc8d029967375081aabda462faf10b070aefc1a175ea7f42f5267c"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-malay-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "771c6b7ab2865e2563e1ce19bf06611aad674c3f0a180ec43c03a9883e49c8aa"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-mongolian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f53de502920af44b5d8ec7787895c0a81b0f5f43e3f3c2b80a240f2b605122c1"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-nynorsk-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db00b13561df244acb76927677200ff399b02d8c9b160d25a38320ef3361cfa9"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-persian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "043ba9b4ac7df99acaa1cd9f5925d6fc9b0fe850d3891bbeb91b27ed94f266c4"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-portuguese-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9df0be307b3f5e24e10e76a7841302c0ff4a6ebf818a11d3a3c5c4cecfcfe58b"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-russian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dea97d6643e90ee4fc0043c728f0c06cdd9e69d4970fd1983e5c59b3448a676e"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-spanish-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d45be9bede9b9d6d53b6e06047822a18dbd83e5d515736afecd85c1e71cc6070"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-thai-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "194b09209fc63d986d8ef9505689756eff1935fa52fd91031b60e7d546ca3c76"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-turkish-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b517e12fe94ce80e7f8f380fdd2c0223bcfe351c0898c9a83f56f78b3afad81"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-ukrainian-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14ed035dd4b7ec5f76fe3b07e5f499d76c4cdb2a6d275459e4cdd3a3d21f131a"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-vietnamese-language-model"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07d08afaf263906aa3f2bfaffaf52eecd368992685e2468f1ba7f85f3e41fd49"
 dependencies = [
  "include_dir",
 ]
