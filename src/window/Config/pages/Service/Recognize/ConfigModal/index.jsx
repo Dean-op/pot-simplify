@@ -4,7 +4,6 @@ import React from 'react';
 
 import * as builtinServices from '../../../../../../services/recognize';
 import { getServiceName } from '../../../../../../utils/service_instance';
-import { osType } from '../../../../../../utils/env';
 
 export default function ConfigModal(props) {
     const { serviceInstanceKey, isOpen, onOpenChange, updateServiceInstanceList } = props;
@@ -27,7 +26,7 @@ export default function ConfigModal(props) {
                             <img
                                 src={
                                     serviceName === 'system'
-                                        ? `logo/${osType}.svg`
+                                        ? 'logo/Windows_NT.svg'
                                         : builtinServices[serviceName].info.icon
                                 }
                                 className='h-[24px] w-[24px] my-auto'

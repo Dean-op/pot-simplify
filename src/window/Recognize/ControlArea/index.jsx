@@ -10,7 +10,6 @@ import * as builtinService from '../../../services/recognize';
 import { languageList } from '../../../utils/language';
 import { useConfig } from '../../../hooks';
 import { textAtom } from '../TextArea';
-import { osType } from '../../../utils/env';
 import { getServiceName, INSTANCE_NAME_CONFIG_KEY, getDisplayInstanceName } from '../../../utils/service_instance';
 
 export const currentServiceInstanceKeyAtom = atom();
@@ -54,7 +53,7 @@ export default function ControlArea(props) {
                                     className='h-[16px] w-[16px] my-auto'
                                     src={
                                         builtinService[getServiceName(currentServiceInstanceKey)].info.icon === 'system'
-                                            ? `logo/${osType}.svg`
+                                            ? 'logo/Windows_NT.svg'
                                             : builtinService[getServiceName(currentServiceInstanceKey)].info.icon
                                     }
                                 />
@@ -81,7 +80,7 @@ export default function ControlArea(props) {
                                             className='h-[16px] w-[16px] my-auto'
                                             src={
                                                 builtinService[getServiceName(instanceKey)].info.icon === 'system'
-                                                    ? `logo/${osType}.svg`
+                                                    ? 'logo/Windows_NT.svg'
                                                     : builtinService[getServiceName(instanceKey)].info.icon
                                             }
                                         />

@@ -7,7 +7,6 @@ import React from 'react';
 
 import { INSTANCE_NAME_CONFIG_KEY, getServiceName } from '../../../../../../utils/service_instance';
 import * as builtinServices from '../../../../../../services/recognize';
-import { osType } from '../../../../../../utils/env';
 import { useConfig } from '../../../../../../hooks';
 
 export default function ServiceItem(props) {
@@ -31,7 +30,7 @@ export default function ServiceItem(props) {
 
                     <Spacer x={2} />
                     <img
-                        src={serviceName === 'system' ? `logo/${osType}.svg` : builtinServices[serviceName].info.icon}
+                        src={serviceName === 'system' ? 'logo/Windows_NT.svg' : builtinServices[serviceName].info.icon}
                         className='h-[24px] w-[24px] my-auto'
                         draggable={false}
                     />

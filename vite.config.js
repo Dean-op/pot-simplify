@@ -39,8 +39,8 @@ export default defineConfig(async () => ({
                 },
             },
         },
-        // Tauri supports es2021
-        target: process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari11',
+        // 只发 Windows，WebView2 跟着 Edge 走，直接按 chrome105 出码
+        target: 'chrome105',
         // don't minify for debug builds
         minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
         // produce sourcemaps for debug builds

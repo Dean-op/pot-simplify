@@ -14,7 +14,6 @@ import { invoke } from '@tauri-apps/api';
 import { useTheme } from 'next-themes';
 
 import { useConfig } from '../../../../hooks/useConfig';
-import { osType } from '../../../../utils/env';
 import { loadLanguage } from '../../../../i18n';
 
 export default function General() {
@@ -283,7 +282,7 @@ export default function General() {
                             </Dropdown>
                         )}
                     </div>
-                    <div className={`config-item ${osType !== 'Windows_NT' && 'hidden'}`}>
+                    <div className='config-item'>
                         <h3 className='my-auto'>{t('config.general.tray_click_event')}</h3>
                         {trayClickEvent !== null && (
                             <Dropdown>
@@ -309,7 +308,7 @@ export default function General() {
                             </Dropdown>
                         )}
                     </div>
-                    <div className={`config-item ${osType === 'Darwin' && 'hidden'}`}>
+                    <div className='config-item'>
                         <h3>{t('config.general.transparent')}</h3>
                         {transparent !== null && (
                             <Switch

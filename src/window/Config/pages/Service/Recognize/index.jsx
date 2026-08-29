@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 
 import { useToastStyle } from '../../../../../hooks';
-import { osType } from '../../../../../utils/env';
 import { useConfig, deleteKey } from '../../../../../hooks';
 import ServiceItem from './ServiceItem';
 import SelectModal from './SelectModal';
@@ -56,11 +55,7 @@ export default function Recognize() {
     return (
         <>
             <Toaster />
-            <Card
-                className={`${
-                    osType === 'Linux' ? 'h-[calc(100vh-140px)]' : 'h-[calc(100vh-120px)]'
-                } overflow-y-auto p-5 flex justify-between`}
-            >
+            <Card className='h-[calc(100vh-120px)] overflow-y-auto p-5 flex justify-between'>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable
                         droppableId='droppable'
