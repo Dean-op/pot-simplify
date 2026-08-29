@@ -1,12 +1,12 @@
 import { fetch, Body } from '@tauri-apps/api/http';
-import { buildChatCompletionsUrl, formatApiError } from '../../../utils/llm_provider';
+import { buildChatCompletionsUrl, buildThinkingParams, formatApiError } from '../../../utils/llm_provider';
 import { Language } from './info';
 import { defaultRequestArguments } from './Config';
 
 export async function translate(text, from, to, options) {
     const { config, setResult, detect } = options;
 
-    let { service, requestPath, model, apiKey, stream, promptList, requestArguments } = config;
+    let { service, requestPath, model, apiKey, stream, promptList, requestArguments, thinkingMode } = config;
 
     // azure 的地址是完整的 deployment 路径，不做补全；openai 兼容端点统一补到 /chat/completions
     let apiUrl;
@@ -51,6 +51,10 @@ export async function translate(text, from, to, options) {
               };
     const body = {
         ...JSON.parse(requestArguments ?? defaultRequestArguments),
+        // 放在 requestArguments 之后：开关是显式选的，优先级高于手写参数；
+        // 想完全交给手写参数控制就把开关选成「跟随模型默认」，那时这里返回空对象。
+        // 旧配置里没有 thinkingMode，按「强制关闭」处理——本来就是为了提速加的。
+        ...buildThinkingParams(requestPath, thinkingMode ?? 'off'),
         stream: stream,
         messages: promptList,
     };

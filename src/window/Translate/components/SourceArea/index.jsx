@@ -22,6 +22,13 @@ import { debug } from 'tauri-plugin-log-api';
 export const sourceTextAtom = atom('');
 export const detectLanguageAtom = atom('');
 
+// 检测和翻译现在是并发的：这里发起检测就立刻把 sourceText 同步出去，让
+// TargetArea 先跑起来（清空旧译文、置 loading、解析服务配置），真正要用
+// 检测结果的地方再 await 这个 promise。默认的本地引擎基本是立刻就 resolve，
+// 换成百度/谷歌时这一个 RTT 也能和上面那些活儿重叠掉。
+let detectTask = Promise.resolve('');
+export const waitDetectLanguage = () => detectTask;
+
 let unlisten = null;
 let timer = null;
 
@@ -38,9 +45,20 @@ export default function SourceArea(props) {
     const [hideWindow] = useConfig('translate_hide_window', false);
     const [hideSource] = useConfig('hide_source', false);
     const [windowType, setWindowType] = useState('[SELECTION_TRANSLATE]');
+    const [syncRequest, setSyncRequest] = useState(0);
     const toastStyle = useToastStyle();
     const { t } = useTranslation();
     const textAreaRef = useRef();
+
+    // setSourceText 是 useState，而 syncSourceText 读的是渲染时才写的那个 ref，
+    // 所以不能在同一个 tick 里直接 sync（原来是靠 await 语种检测顺带等到了下一次
+    // 渲染）。改成排一个请求，等这次渲染提交完再同步。
+    const requestSync = () => setSyncRequest((n) => n + 1);
+    useEffect(() => {
+        if (syncRequest > 0) {
+            syncSourceText();
+        }
+    }, [syncRequest]);
 
     const handleNewText = async (text) => {
         text = text.trim();
@@ -83,9 +101,8 @@ export default function SourceArea(props) {
                             } else {
                                 setSourceText(newText);
                             }
-                            detect_language(newText).then(() => {
-                                syncSourceText();
-                            });
+                            detect_language(newText);
+                            requestSync();
                         },
                         (e) => {
                             setSourceText(e.toString());
@@ -109,18 +126,16 @@ export default function SourceArea(props) {
             } else {
                 setSourceText(newText);
             }
-            detect_language(newText).then(() => {
-                syncSourceText();
-            });
+            detect_language(newText);
+            requestSync();
         }
     };
 
     const keyDown = (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            detect_language(sourceText).then(() => {
-                syncSourceText();
-            });
+            detect_language(sourceText);
+            requestSync();
         }
         if (event.key === 'Escape') {
             appWindow.close();
@@ -160,8 +175,12 @@ export default function SourceArea(props) {
         textAreaRef.current.style.height = textAreaRef.current.scrollHeight + 'px';
     }, [sourceText]);
 
-    const detect_language = async (text) => {
-        setDetectLanguage(await detect(text));
+    const detect_language = (text) => {
+        detectTask = detect(text).then((lang) => {
+            setDetectLanguage(lang);
+            return lang;
+        });
+        return detectTask;
     };
 
     let sourceTextChangeTimer = null;
@@ -173,9 +192,8 @@ export default function SourceArea(props) {
                 clearTimeout(sourceTextChangeTimer);
             }
             sourceTextChangeTimer = setTimeout(() => {
-                detect_language(text).then(() => {
-                    syncSourceText();
-                });
+                detect_language(text);
+                requestSync();
             }, 1000);
         }
     };
@@ -322,9 +340,8 @@ export default function SourceArea(props) {
                                     onPress={() => {
                                         const newText = sourceText.replace(/\-\s+/g, '').replace(/\s+/g, ' ');
                                         setSourceText(newText);
-                                        detect_language(newText).then(() => {
-                                            syncSourceText();
-                                        });
+                                        detect_language(newText);
+                                        requestSync();
                                     }}
                                 >
                                     <MdSmartButton className='text-[16px]' />
@@ -364,9 +381,8 @@ export default function SourceArea(props) {
                             className='text-[14px] font-bold'
                             startContent={<HiTranslate className='text-[16px]' />}
                             onPress={() => {
-                                detect_language(sourceText).then(() => {
-                                    syncSourceText();
-                                });
+                                detect_language(sourceText);
+                                requestSync();
                             }}
                         />
                     </Tooltip>

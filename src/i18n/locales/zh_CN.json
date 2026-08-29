@@ -169,6 +169,11 @@
                     "api_key": "Api Key",
                     "model": "模型",
                     "stream": "流式输出",
+                    "thinking": "思考模式",
+                    "thinking_off": "强制关闭（更快）",
+                    "thinking_auto": "跟随模型默认",
+                    "thinking_on": "强制开启",
+                    "thinking_description": "翻译短文本时思考链只会拖慢首字输出，默认强制关闭。仅对 DeepSeek 官方、阿里百炼、硅基流动生效，其他网关请在下方 Request Arguments 里自行添加参数。",
                     "prompt_description": "通过自定义Prompt自定义OpenAI行为, $text $from $to $detect 将会被替换为 待翻译文本，源语言，目标语言和检测到的语言。",
                     "add": "添加 Prompt"
                 },

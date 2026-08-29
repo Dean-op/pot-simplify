@@ -311,7 +311,9 @@ async function local_detect(text) {
 }
 
 export default async function detect(text) {
-    let langDetectEngine = (await store.get('translate_detect_engine')) ?? 'baidu';
+    // 默认走本地引擎：baidu/google 那几个要发一次 HTTP，会把翻译的首字节
+    // 时间整体推后一个 RTT；本地引擎是一次 IPC，检测器还是全局静态的。
+    let langDetectEngine = (await store.get('translate_detect_engine')) ?? 'local';
 
     switch (langDetectEngine) {
         case 'baidu':

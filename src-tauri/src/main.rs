@@ -90,10 +90,13 @@ fn main() {
                     .show()
                     .unwrap(),
             }
-            if let Some(engine) = get("translate_detect_engine") {
-                if engine.as_str().unwrap() == "local" {
-                    init_lang_detect();
-                }
+            // 语种检测引擎默认就是 local，配置里没这个键时也要预热，否则第一次
+            // 划词翻译要在请求前等着 lingua 把模型解压出来
+            let detect_engine = get("translate_detect_engine")
+                .and_then(|v| v.as_str().map(str::to_string))
+                .unwrap_or_else(|| "local".to_string());
+            if detect_engine == "local" {
+                init_lang_detect();
             }
             let clipboard_monitor = match get("clipboard_monitor") {
                 Some(v) => v.as_bool().unwrap(),

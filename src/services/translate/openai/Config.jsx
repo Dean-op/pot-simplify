@@ -44,6 +44,8 @@ export function Config(props) {
                 { role: 'user', content: `Translate into $to:\n"""\n$text\n"""` },
             ],
             requestArguments: defaultRequestArguments,
+            // 默认强制关闭思考：翻译这种短文本用思考链只会把首字节时间拖长
+            thinkingMode: 'off',
         },
         { sync: false }
     );
@@ -66,6 +68,12 @@ export function Config(props) {
             setOpenaiConfig({
                 ...openaiConfig,
                 requestArguments: defaultRequestArguments,
+            });
+        }
+        if (openaiConfig.thinkingMode === undefined) {
+            setOpenaiConfig({
+                ...openaiConfig,
+                thinkingMode: 'off',
             });
         }
     }
@@ -203,6 +211,31 @@ export function Config(props) {
                         {t('services.translate.openai.stream')}
                     </Switch>
                 </div>
+                <div className='config-item'>
+                    <h3 className='my-auto'>{t('services.translate.openai.thinking')}</h3>
+                    <Dropdown>
+                        <DropdownTrigger>
+                            <Button variant='bordered'>
+                                {t(`services.translate.openai.thinking_${openaiConfig.thinkingMode ?? 'off'}`)}
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                            autoFocus='first'
+                            aria-label='thinking mode'
+                            onAction={(key) => {
+                                setOpenaiConfig({
+                                    ...openaiConfig,
+                                    thinkingMode: key,
+                                });
+                            }}
+                        >
+                            <DropdownItem key='off'>{t('services.translate.openai.thinking_off')}</DropdownItem>
+                            <DropdownItem key='auto'>{t('services.translate.openai.thinking_auto')}</DropdownItem>
+                            <DropdownItem key='on'>{t('services.translate.openai.thinking_on')}</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
+                <p className='text-[10px] text-default-700'>{t('services.translate.openai.thinking_description')}</p>
                 <div className='config-item'>
                     <Input
                         label={t('services.translate.openai.request_path')}

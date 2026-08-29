@@ -80,6 +80,36 @@ export function formatApiError(status, data) {
     return `Http Status: ${status}\n${JSON.stringify(data)}`;
 }
 
+/**
+ * 「思考模式」的请求参数。各家的参数名不一样，按 host 分派：
+ *   · DeepSeek 官方（api.deepseek.com）：thinking: { type: 'enabled' | 'disabled' }
+ *   · 阿里百炼 / 硅基流动：enable_thinking: true | false
+ * 其余 host（OpenAI、Azure、自建网关）一律不发 —— OpenAI 对不认识的字段
+ * 直接 400，宁可开关不生效也不能把整个请求打挂。自建网关要关思考可以自己在
+ * Request Arguments 里写 {"enable_thinking": false}。
+ *
+ * mode: 'auto' 跟随模型默认 | 'off' 强制关闭 | 'on' 强制开启
+ */
+export function buildThinkingParams(requestPath, mode) {
+    if (mode !== 'off' && mode !== 'on') {
+        return {};
+    }
+    const enabled = mode === 'on';
+    let host;
+    try {
+        host = parseUrl(requestPath).hostname;
+    } catch {
+        return {};
+    }
+    if (/(^|\.)deepseek\.com$/.test(host)) {
+        return { thinking: { type: enabled ? 'enabled' : 'disabled' } };
+    }
+    if (/(^|\.)dashscope\.aliyuncs\.com$/.test(host) || /(^|\.)siliconflow\.(cn|com)$/.test(host)) {
+        return { enable_thinking: enabled };
+    }
+    return {};
+}
+
 /** 拉取模型列表，返回排好序的 model id 数组 */
 export async function fetchModelList(requestPath, apiKey) {
     const url = buildModelsUrl(requestPath);

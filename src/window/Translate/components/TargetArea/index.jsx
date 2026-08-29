@@ -31,7 +31,7 @@ import useMeasure from 'react-use-measure';
 
 import { sourceLanguageAtom, targetLanguageAtom } from '../LanguageArea';
 import { useConfig, useToastStyle, useVoice } from '../../../../hooks';
-import { sourceTextAtom, detectLanguageAtom } from '../SourceArea';
+import { sourceTextAtom, detectLanguageAtom, waitDetectLanguage } from '../SourceArea';
 import * as builtinServices from '../../../../services/translate';
 
 import { info, error as logError } from 'tauri-plugin-log-api';
@@ -128,18 +128,23 @@ export default function TargetArea(props) {
 
         const LanguageEnum = builtinServices[translateServiceName].Language;
         if (sourceLanguage in LanguageEnum && targetLanguage in LanguageEnum) {
-            let newTargetLanguage = targetLanguage;
-            if (sourceLanguage === 'auto' && targetLanguage === detectLanguage) {
-                newTargetLanguage = translateSecondLanguage;
-            }
             setIsLoading(true);
             setHide(true);
+            // 语种检测是 SourceArea 那边并发发起的，到这里才真正需要结果：判断
+            // 要不要切到第二目标语言，以及 prompt 里的 $detect。默认的本地引擎
+            // 这一步基本不耗时，换成百度/谷歌时这个 RTT 也和上面的渲染重叠掉了。
+            const detected = await waitDetectLanguage();
+            if (translateID[index] !== id) return;
+            let newTargetLanguage = targetLanguage;
+            if (sourceLanguage === 'auto' && targetLanguage === detected) {
+                newTargetLanguage = translateSecondLanguage;
+            }
             const instanceConfig = serviceInstanceConfigMap[currentTranslateServiceInstanceKey];
             const setHideOnce = invokeOnce(setHide);
             builtinServices[translateServiceName]
                 .translate(sourceText.trim(), LanguageEnum[sourceLanguage], LanguageEnum[newTargetLanguage], {
                     config: instanceConfig,
-                    detect: detectLanguage,
+                    detect: detected,
                     setResult: (v) => {
                         if (translateID[index] !== id) return;
                         setResult(v);

@@ -169,6 +169,11 @@
                     "api_key": "Api Key",
                     "model": "Model",
                     "stream": "Stream Mode",
+                    "thinking": "Thinking Mode",
+                    "thinking_off": "Force Off (Faster)",
+                    "thinking_auto": "Model Default",
+                    "thinking_on": "Force On",
+                    "thinking_description": "For short translations the reasoning chain only delays the first token, so it is forced off by default. Only applies to DeepSeek, Alibaba Bailian and SiliconFlow; for other gateways add the parameter yourself in Request Arguments below.",
                     "prompt_description": "By customizing the Prompt, you can customize the behavior of OpenAI. $text $from $to $detect will be replaced with the text to be translated, source language, target language and detected language.",
                     "add": "Add Prompt"
                 },
