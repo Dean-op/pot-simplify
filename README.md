@@ -65,16 +65,31 @@ Fork 自 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7，
 
 ## 安装
 
-没有发布产物，自己构建：
+三种拿到安装包的方式，选一种就行。
+
+**从 Releases 下载**（打过 tag 才有）。在本地打一个 tag 推上去，CI 会把三个架构的安装包传到 Release：
+
+```powershell
+git tag 3.1.0
+git push origin 3.1.0
+```
+
+**从 Actions 下载**（每次推 master 或手动触发都有）。进仓库的 Actions 页面，选最新一次 Package 运行，页面底部 Artifacts 里有 `windows_x86_64-pc-windows-msvc` 等六个压缩包，解开就是 `.exe` 安装程序。保留期 90 天。不想为了拿包专门推 commit 的话，在 Actions 页面点 Run workflow 手动跑一次。
+
+**本地自己构建**：
 
 ```powershell
 pnpm install
 pnpm tauri build          # 产物在 src-tauri/target/release/bundle/nsis/
 ```
 
-推送到 `master` 时 GitHub Actions 会打三个架构（x64 / x86 / arm64）的 NSIS 安装包，另外还有一套内置固定版本 WebView2 运行时的安装包（`*_fix_webview2_runtime-setup.exe`），给装不了 WebView2 的环境用。
+首次 release 构建因为开了 LTO 会比较久（十几分钟量级），之后增量快很多。
 
-启动后没有界面、点托盘图标没反应，基本都是 WebView2 被卸载或禁用了，装回去即可，或者换用上面那个内置运行时的版本。
+安装包是 NSIS 的 `pot_<版本>_x64-setup.exe`，per-machine 安装，会要管理员权限，装到 `Program Files` 并建开始菜单快捷方式；卸载走「应用和功能」。配置和日志在 `%APPDATA%\com.pot-app.desktop`，卸载不会动它，所以重装或换版本设置都还在。
+
+CI 一共出六个包：三个架构各一个普通版，加三个 `*_fix_webview2_runtime-setup.exe`——后者把固定版本的 WebView2 运行时打进了安装包，体积大很多，只在系统里 WebView2 被卸载或禁用、装不上的环境才需要。启动后没有界面、点托盘图标没反应，基本都是这个原因。
+
+装完记得先去 设置 → 热键 配四个快捷键（默认全空），以及 设置 → 服务 里填 API key。想开机自启的话在 设置 → 常规 里打开。
 
 ## 开发
 
