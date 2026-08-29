@@ -100,16 +100,6 @@
                 },
                 "transparent": "투명 효과",
                 "dev_mode": "개발자 모드",
-                "proxy": {
-                    "title": "프록시 설정",
-                    "host": "호스트",
-                    "port": "포트",
-                    "username": "사용자명",
-                    "password": "비밀번호",
-                    "no_proxy": "프록시 없음"
-                },
-                "proxy_change": "프록시 설정이 변경되었습니다. 변경 사항을 적용하려면 애플리케이션을 종료 후 다시 시작하세요",
-                "proxy_error": "프록시 호스트 및 포트를 입력해주세요",
                 "tray_click_event": "시스템 트레이 클릭 시",
                 "event": {
                     "config": "설정",

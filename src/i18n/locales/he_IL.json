@@ -47,7 +47,6 @@
                     "system": "מערכת",
                     "light": "מואר"
                 },
-                "proxy_change": "ה-proxy שונה, הפעל מחדש את האפליקציה כדי שהשינויים ייכנסו לתוקף",
                 "label": "כללי",
                 "title": "הגדרות כלליות",
                 "font_size": {
@@ -62,15 +61,6 @@
                 },
                 "default_font": "ברירת מחדל",
                 "transparent": "אפקט שקוף",
-                "proxy": {
-                    "title": "פרוקסי",
-                    "username": "שם-משתמש",
-                    "password": "סיסמא",
-                    "no_proxy": "ללא פרוקסי",
-                    "port": "יציאה",
-                    "host": "מארח"
-                },
-                "proxy_error": "אנא מלא את כתובת המארח והיציאה",
                 "event": {
                     "config": "העדפה",
                     "translate": "תרגם",

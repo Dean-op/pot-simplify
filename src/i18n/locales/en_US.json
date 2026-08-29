@@ -67,16 +67,6 @@
                 },
                 "transparent": "Transparent Effect",
                 "dev_mode": "Developer Mode",
-                "proxy": {
-                    "title": "Proxy",
-                    "host": "Host",
-                    "port": "Port",
-                    "username": "Username",
-                    "password": "Password",
-                    "no_proxy": "No Proxy"
-                },
-                "proxy_change": "The proxy has been changed, Restart the application for the changes to take effect",
-                "proxy_error": "Please fill in the host and port",
                 "tray_click_event": "Tray Click Event",
                 "event": {
                     "config": "Preference",

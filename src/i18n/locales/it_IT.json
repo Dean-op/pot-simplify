@@ -131,15 +131,6 @@
             },
             "general": {
                 "auto_start": "Avvio automatico",
-                "proxy": {
-                    "title": "Proxy",
-                    "port": "Porta",
-                    "host": "Host",
-                    "password": "Password",
-                    "username": "Nome Utente",
-                    "no_proxy": "Nessun Proxy"
-                },
-                "proxy_change": "Il proxy è stato modificato, riavviare l'applicazione affinché le modifiche abbiano effetto",
                 "default_font": "Predefinito",
                 "app_theme": "Tema",
                 "event": {
@@ -166,7 +157,6 @@
                     "title": "Dimensione del font"
                 },
                 "app_font": "Font",
-                "proxy_error": "Inserisci l'host e la porta",
                 "app_language": "Lingua dell'applicazione",
                 "transparent": "Effetto trasparente",
                 "title": "Impostazioni Generali",

@@ -95,15 +95,6 @@
             "general": {
                 "tray_click_event": "Événement au clic sur l'icône de statut",
                 "auto_start": "Démarrage automatique",
-                "proxy": {
-                    "title": "Proxy",
-                    "port": "Port",
-                    "host": "Hôte",
-                    "password": "Mot de passe",
-                    "username": "Nom d'utilisateur",
-                    "no_proxy": "Pas de proxy"
-                },
-                "proxy_change": "Le proxy a été modifié. Relancez l'application pour que les modifications prennent effet",
                 "app_theme": "Thème",
                 "event": {
                     "disable": "Désactiver",
@@ -118,7 +109,6 @@
                     "system": "Système",
                     "dark": "Sombre"
                 },
-                "proxy_error": "Veuillez compléter l'hôte et le port",
                 "app_language": "Langue d'affichage",
                 "transparent": "Effet de transparence",
                 "title": "Paramètres généraux",

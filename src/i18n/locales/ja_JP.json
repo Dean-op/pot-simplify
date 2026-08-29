@@ -18,11 +18,6 @@
                 "title": "一般設定",
                 "app_fallback_font": "フォールバックフォント",
                 "transparent": "透明効果",
-                "proxy": {
-                    "title": "プロキシ",
-                    "password": "パスワード",
-                    "username": "ユーザー名"
-                },
                 "font_size": {
                     "10": "極小 (10px)",
                     "title": "文字サイズ",
@@ -37,7 +32,6 @@
                 "dev_mode": "開発者モード",
                 "app_theme": "テーマ",
                 "auto_start": "自動起動",
-                "proxy_change": "プロキシが変更されました。変更を有効にするためにアプリケーションを再起動してください",
                 "app_language": "表示言語",
                 "app_font": "フォント"
             },

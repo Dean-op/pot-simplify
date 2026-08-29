@@ -53,16 +53,6 @@
                     "system": "系統主題"
                 },
                 "transparent": "透明效果",
-                "proxy": {
-                    "title": "代理伺服器",
-                    "host": "主機",
-                    "port": "連接埠",
-                    "username": "使用者名稱",
-                    "password": "密碼",
-                    "no_proxy": "不使用代理伺服器"
-                },
-                "proxy_change": "代理伺服器已變更，請重新啟動應用程式以使變更生效",
-                "proxy_error": "請填寫主機和連接埠",
                 "tray_click_event": "系統列圖示點選事件",
                 "event": {
                     "config": "偏好設定",

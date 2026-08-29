@@ -63,16 +63,6 @@
                     "system": "Sistema"
                 },
                 "transparent": "Efeito de Transparência",
-                "proxy": {
-                    "title": "Proxy",
-                    "host": "Host",
-                    "port": "Porta",
-                    "username": "Nome de usuário",
-                    "password": "Senha",
-                    "no_proxy": "Sem Proxy"
-                },
-                "proxy_change": "O proxy foi alterado. Reinicie o aplicativo para que as alterações tenham efeito",
-                "proxy_error": "Por favor preencha o host e a porta",
                 "tray_click_event": "Evento de Clique na Bandeja",
                 "event": {
                     "config": "Preferência",
