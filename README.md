@@ -1,6 +1,6 @@
 <img width="140px" src="public/icon.svg" align="left"/>
 
-# Pot · Windows 精简版
+# pot-simplify
 
 > 划词翻译 + 截图文字识别。只跑在 Windows 上的个人精简 fork。
 
@@ -87,11 +87,13 @@ pnpm tauri build          # 产物在 src-tauri/target/release/bundle/nsis/
 
 首次 release 构建因为开了 LTO 会比较久（十几分钟量级），之后增量快很多。
 
-安装包是 NSIS 的 `pot_<版本>_x64-setup.exe`，per-machine 安装，会要管理员权限，装到 `Program Files` 并建开始菜单快捷方式；卸载走「应用和功能」。配置和日志在 `%APPDATA%\com.pot-app.desktop`，卸载不会动它，所以重装或换版本设置都还在。
+安装包是 NSIS 的 `pot-simplify_<版本>_x64-setup.exe`，per-machine 安装，会要管理员权限，装到 `Program Files\pot-simplify` 并建开始菜单快捷方式；卸载走「应用和功能」。配置和日志仍在 `%APPDATA%\com.pot-app.desktop`——这个目录名由 bundle identifier 决定，改名时故意没动它，否则老的热键和 API key 全部作废。卸载不会清空它，所以重装或换版本设置都还在。
 
 CI 一共出六个包：三个架构各一个普通版，加三个 `*_fix_webview2_runtime-setup.exe`——后者把固定版本的 WebView2 运行时打进了安装包，体积大很多，只在系统里 WebView2 被卸载或禁用、装不上的环境才需要。启动后没有界面、点托盘图标没反应，基本都是这个原因。
 
 装完记得先去 设置 → 热键 配四个快捷键（默认全空），以及 设置 → 服务 里填 API key。想开机自启的话在 设置 → 常规 里打开。
+
+如果之前装过叫 `pot` 的旧版本：可执行文件名从 `pot.exe` 变成了 `pot-simplify.exe`，安装目录也跟着变，所以要先在「应用和功能」里卸掉旧的，否则两份并存。开机自启是按可执行文件名写进注册表 `HKCU\...\CurrentVersion\Run` 的，旧的那条 `pot` 不会被卸载程序清掉，装完新版后到 设置 → 常规 里关一次再开一次即可。设置本身不受影响。
 
 ## 开发
 
