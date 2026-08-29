@@ -8,8 +8,8 @@ import { useTheme } from 'next-themes';
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from './utils/store';
 import { useConfig } from './hooks';
+import { loadLanguage } from './i18n';
 import './style.css';
-import './i18n';
 
 // 每个窗口单独成 chunk：划词窗口不该为了弹出一个 350x420 的小窗
 // 去解析整个设置页（含所有服务的 Config 表单）。
@@ -94,7 +94,10 @@ export default function App() {
 
     useEffect(() => {
         if (appLanguage !== null) {
-            i18n.changeLanguage(appLanguage);
+            // en / zh_cn 是内联的，其余语言的资源要先按需加载再切
+            loadLanguage(appLanguage).then(() => {
+                i18n.changeLanguage(appLanguage);
+            });
         }
     }, [appLanguage]);
 

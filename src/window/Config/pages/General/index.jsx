@@ -18,6 +18,7 @@ import { useTheme } from 'next-themes';
 import { useConfig } from '../../../../hooks/useConfig';
 import { useToastStyle } from '../../../../hooks';
 import { osType } from '../../../../utils/env';
+import { loadLanguage } from '../../../../i18n';
 
 export default function General() {
     const [autoStart, setAutoStart] = useState(false);
@@ -110,7 +111,9 @@ export default function General() {
                                     className='max-h-[40vh] overflow-y-auto'
                                     onAction={(key) => {
                                         setAppLanguage(key);
-                                        i18n.changeLanguage(key);
+                                        loadLanguage(key).then(() => {
+                                            i18n.changeLanguage(key);
+                                        });
                                         invoke('update_tray', { language: key, copyMode: '' });
                                     }}
                                 >
