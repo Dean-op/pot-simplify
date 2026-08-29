@@ -204,7 +204,9 @@
                     "thinking_off": "强制关闭（更快）",
                     "thinking_auto": "跟随模型默认",
                     "thinking_on": "强制开启",
-                    "thinking_description": "识别只是照抄图里的文字，思考链只会在出字之前白烧几百个 token，默认强制关闭。仅对 DeepSeek 官方、阿里百炼、硅基流动生效，其他网关请在下方 Request Arguments 里自行添加参数。"
+                    "thinking_description": "识别只是照抄图里的文字，思考链只会在出字之前白烧几百个 token，默认强制关闭。仅对 DeepSeek 官方、阿里百炼、硅基流动生效，其他网关请在下方 Request Arguments 里自行添加参数。",
+                    "max_image_edge": "图片长边上限",
+                    "max_image_edge_description": "发给模型之前把截图等比缩到这个像素数以内。视觉模型按像素数收 token，图小一圈上传和首字都会快明显一截。默认 2048，对 1080p 截图不生效；识别小字或密集表格不准时可以调大，填 0 表示不缩放。"
                 }
             },
             "provider_preset": "提供商预设",

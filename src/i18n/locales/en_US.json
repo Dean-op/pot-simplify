@@ -204,7 +204,9 @@
                     "thinking_off": "Force Off (Faster)",
                     "thinking_auto": "Model Default",
                     "thinking_on": "Force On",
-                    "thinking_description": "OCR only copies the text in the image, so a reasoning chain just burns hundreds of tokens before the first character shows up; forced off by default. Only applies to DeepSeek, Alibaba Bailian and SiliconFlow; for other gateways add the parameter yourself in Request Arguments below."
+                    "thinking_description": "OCR only copies the text in the image, so a reasoning chain just burns hundreds of tokens before the first character shows up; forced off by default. Only applies to DeepSeek, Alibaba Bailian and SiliconFlow; for other gateways add the parameter yourself in Request Arguments below.",
+                    "max_image_edge": "Max Image Edge",
+                    "max_image_edge_description": "Scales the screenshot down to this many pixels on its long edge before sending it. Vision models charge by pixel count, so a smaller image noticeably speeds up both the upload and the first character. Defaults to 2048, which is a no-op for 1080p screenshots; raise it if small text or dense tables come back wrong, or set 0 to disable scaling."
                 }
             },
             "provider_preset": "Provider Preset",

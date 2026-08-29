@@ -52,7 +52,10 @@ export default function TextArea(props) {
                 recognizeId = id;
                 // 只有要把图片发给模型的服务才需要 base64。系统 OCR 是 Rust 侧
                 // 自己读缓存里的 PNG，白搬一趟几 MB 的 base64 纯属浪费。
-                const imageData = service.info.needImageData ? invoke('get_base64') : Promise.resolve('');
+                // maxEdge 交给 Rust 侧缩图：磁盘上的原图不动，只缩发出去的这一份。
+                const imageData = service.info.needImageData
+                    ? invoke('get_base64', { maxEdge: instanceConfig['maxImageEdge'] ?? 0 })
+                    : Promise.resolve('');
                 imageData
                     .then((base64) =>
                         service.recognize(base64, service.Language[language], {

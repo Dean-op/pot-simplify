@@ -80,10 +80,13 @@ export default function SourceArea(props) {
             const serviceInstanceKey = recognizeServiceList[0];
             const serviceName = getServiceName(serviceInstanceKey);
             const service = recognizeServices[serviceName];
-            // 只有要把图片发给模型的服务才需要 base64，系统 OCR 在 Rust 侧自己读 PNG
-            const base64 = service.info.needImageData ? await invoke('get_base64') : '';
+            const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey] ?? {};
+            // 只有要把图片发给模型的服务才需要 base64，系统 OCR 在 Rust 侧自己读 PNG。
+            // maxEdge 让 Rust 侧把发出去的那一份缩到上限，磁盘上的原图不动。
+            const base64 = service.info.needImageData
+                ? await invoke('get_base64', { maxEdge: instanceConfig['maxImageEdge'] ?? 0 })
+                : '';
             if (recognizeLanguage in service.Language) {
-                const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
                 service
                     .recognize(base64, service.Language[recognizeLanguage], {
                         config: instanceConfig,

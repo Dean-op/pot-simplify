@@ -14,21 +14,65 @@ fn cache_file(app_handle: &tauri::AppHandle, name: &str) -> std::path::PathBuf {
     path
 }
 
-// 这两个 PNG 只给本机的识别窗口和剪贴板用，image 默认的最高压缩率
-// 能在一张大图上吃掉上百毫秒，纯属浪费，统一用最快档。
-fn save_png_fast(path: &std::path::Path, img: &image::RgbaImage) -> Result<(), image::ImageError> {
+// 这些 PNG 只在本机流转（识别窗口显示、剪贴板、发给模型），image 默认的
+// 最高压缩率能在一张大图上吃掉上百毫秒，纯属浪费，统一用最快档。
+fn encode_png_fast<W: std::io::Write>(
+    writer: W,
+    img: &image::RgbaImage,
+) -> Result<(), image::ImageError> {
     use image::codecs::png::{CompressionType, FilterType, PngEncoder};
     use image::{ExtendedColorType, ImageEncoder};
-    use std::fs::File;
-    use std::io::BufWriter;
 
-    let writer = BufWriter::new(File::create(path)?);
     PngEncoder::new_with_quality(writer, CompressionType::Fast, FilterType::Adaptive).write_image(
         img.as_raw(),
         img.width(),
         img.height(),
         ExtendedColorType::Rgba8,
     )
+}
+
+fn save_png_fast(path: &std::path::Path, img: &image::RgbaImage) -> Result<(), image::ImageError> {
+    use std::fs::File;
+    use std::io::BufWriter;
+
+    encode_png_fast(BufWriter::new(File::create(path)?), img)
+}
+
+// 视觉模型是按像素数收 token 的（Qwen-VL 每 28×28 一个），一张 1440p 的截图
+// 光是上传加 prefill 就要好几秒，而认字并不需要这么高的分辨率。超过上限就等
+// 比缩到上限；没超、或者尺寸都读不出来，返回 None 让调用方用原图，连解码都省。
+//
+// 只缩发给模型的这一份，磁盘上的 cut png 保持原样——复制图片和识别窗口里的
+// 预览都指着它。
+fn shrink_png(png: &[u8], max_edge: u32) -> Option<Vec<u8>> {
+    use image::imageops::FilterType;
+    use std::io::Cursor;
+
+    // 先只读文件头拿尺寸，不解整张图
+    let (width, height) = image::ImageReader::new(Cursor::new(png))
+        .with_guessed_format()
+        .ok()?
+        .into_dimensions()
+        .ok()?;
+    let long_edge = width.max(height);
+    if long_edge <= max_edge {
+        return None;
+    }
+
+    let scale = max_edge as f64 / long_edge as f64;
+    let new_width = ((width as f64 * scale).round() as u32).max(1);
+    let new_height = ((height as f64 * scale).round() as u32).max(1);
+    let img = image::load_from_memory(png).ok()?.to_rgba8();
+    // Triangle：缩小文字比 Nearest 干净得多，又比 Lanczos3 快
+    let resized = image::imageops::resize(&img, new_width, new_height, FilterType::Triangle);
+    info!(
+        "Shrink image: {}x{} -> {}x{}",
+        width, height, new_width, new_height
+    );
+
+    let mut out = Cursor::new(Vec::new());
+    encode_png_fast(&mut out, &resized).ok()?;
+    Some(out.into_inner())
 }
 
 #[tauri::command]
@@ -94,8 +138,10 @@ pub fn cut_image(left: u32, top: u32, width: u32, height: u32, app_handle: tauri
     }
 }
 
+// max_edge：发给模型的图片长边上限，前端传 maxEdge（Tauri 会转成 snake_case）。
+// 传 0 或者不传就是不限制。
 #[tauri::command(async)]
-pub fn get_base64(app_handle: tauri::AppHandle) -> String {
+pub fn get_base64(app_handle: tauri::AppHandle, max_edge: Option<u32>) -> String {
     use base64::{engine::general_purpose, Engine as _};
     use std::fs;
 
@@ -110,6 +156,10 @@ pub fn get_base64(app_handle: tauri::AppHandle) -> String {
             error!("{:?}", e.to_string());
             return "".to_string();
         }
+    };
+    let vec = match max_edge {
+        Some(max_edge) if max_edge > 0 => shrink_png(&vec, max_edge).unwrap_or(vec),
+        _ => vec,
     };
     general_purpose::STANDARD.encode(&vec)
 }

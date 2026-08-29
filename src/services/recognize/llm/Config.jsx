@@ -41,16 +41,22 @@ export function Config(props) {
             stream: true,
             // 默认强制关闭思考：OCR 只要照抄图里的字，思考链是在首字之前空烧 token
             thinkingMode: 'off',
+            // 发给模型的图片长边上限。视觉模型按像素数收 token，2048 对 1080p
+            // 是空操作，1440p 缩到 0.8 倍，识别文字这点损失看不出来
+            maxImageEdge: 2048,
         },
         { sync: false }
     );
-    // 兼容旧版本：这两个字段是后加的，老实例里读出来是 undefined
+    // 兼容旧版本：这几个字段是后加的，老实例里读出来是 undefined
     if (config) {
         if (config.stream === undefined) {
             setConfig({ ...config, stream: true });
         }
         if (config.thinkingMode === undefined) {
             setConfig({ ...config, thinkingMode: 'off' });
+        }
+        if (config.maxImageEdge === undefined) {
+            setConfig({ ...config, maxImageEdge: 2048 });
         }
     }
     const [isLoading, setIsLoading] = useState(false);
@@ -242,6 +248,27 @@ export function Config(props) {
                     </Dropdown>
                 </div>
                 <p className='text-[10px] text-default-700'>{t('services.recognize.llm.thinking_description')}</p>
+                <div className='config-item'>
+                    <Input
+                        label={t('services.recognize.llm.max_image_edge')}
+                        labelPlacement='outside-left'
+                        type='number'
+                        min={0}
+                        value={`${config['maxImageEdge'] ?? 2048}`}
+                        variant='bordered'
+                        classNames={{
+                            base: 'justify-between',
+                            label: 'text-[length:--nextui-font-size-medium]',
+                            mainWrapper: 'max-w-[50%]',
+                        }}
+                        onValueChange={(value) => {
+                            // 输入框清空时不要写成 NaN，按 0（不限制）算
+                            const parsed = parseInt(value, 10);
+                            setConfig({ ...config, maxImageEdge: Number.isNaN(parsed) ? 0 : Math.max(parsed, 0) });
+                        }}
+                    />
+                </div>
+                <p className='text-[10px] text-default-700'>{t('services.recognize.llm.max_image_edge_description')}</p>
                 <h3 className='my-auto'>Prompt</h3>
                 <p className='text-[10px] text-default-700'>{t('services.recognize.llm.prompt_description')}</p>
                 <div className='config-item'>
