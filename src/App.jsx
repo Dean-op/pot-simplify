@@ -1,25 +1,23 @@
 import { appWindow } from '@tauri-apps/api/window';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { warn } from 'tauri-plugin-log-api';
-import React, { useEffect } from 'react';
 import { useTheme } from 'next-themes';
 
 import { invoke } from '@tauri-apps/api/tauri';
-import Screenshot from './window/Screenshot';
-import Translate from './window/Translate';
-import Recognize from './window/Recognize';
 import { store } from './utils/store';
-import Config from './window/Config';
 import { useConfig } from './hooks';
 import './style.css';
 import './i18n';
 
+// 每个窗口单独成 chunk：划词窗口不该为了弹出一个 350x420 的小窗
+// 去解析整个设置页（含所有服务的 Config 表单）。
 const windowMap = {
-    translate: <Translate />,
-    screenshot: <Screenshot />,
-    recognize: <Recognize />,
-    config: <Config />,
+    translate: lazy(() => import('./window/Translate')),
+    screenshot: lazy(() => import('./window/Screenshot')),
+    recognize: lazy(() => import('./window/Recognize')),
+    config: lazy(() => import('./window/Config')),
 };
 
 export default function App() {
@@ -111,5 +109,12 @@ export default function App() {
         }
     }, [appFont, appFallbackFont, appFontSize]);
 
-    return <BrowserRouter>{windowMap[appWindow.label]}</BrowserRouter>;
+    const CurrentWindow = windowMap[appWindow.label];
+
+    // daemon 窗口走独立的 daemon.html，这里拿不到组件时渲染空即可
+    return (
+        <BrowserRouter>
+            <Suspense fallback={<div />}>{CurrentWindow ? <CurrentWindow /> : null}</Suspense>
+        </BrowserRouter>
+    );
 }
