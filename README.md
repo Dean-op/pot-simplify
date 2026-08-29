@@ -74,6 +74,8 @@ git tag 3.1.0
 git push origin 3.1.0
 ```
 
+tag 名必须是 `x.y.z`（`v3.1.0` 也行，`v` 会被去掉），它会成为安装包的版本号；没有 tag 时沿用 `package.json` 里的版本。
+
 **从 Actions 下载**（每次推 master 或手动触发都有）。进仓库的 Actions 页面，选最新一次 Package 运行，页面底部 Artifacts 里有 `windows_x86_64-pc-windows-msvc` 等六个压缩包，解开就是 `.exe` 安装程序。保留期 90 天。不想为了拿包专门推 commit 的话，在 Actions 页面点 Run workflow 手动跑一次。
 
 **本地自己构建**：
