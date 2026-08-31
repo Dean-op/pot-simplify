@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { CgSpaceBetween } from 'react-icons/cg';
 import { MdContentCopy } from 'react-icons/md';
 import { MdSmartButton } from 'react-icons/md';
+import { HiOutlineVolumeUp } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api';
 import { nanoid } from 'nanoid';
@@ -13,7 +14,7 @@ import { nanoid } from 'nanoid';
 import { getServiceName } from '../../../utils/service_instance';
 import { currentServiceInstanceKeyAtom, languageAtom, recognizeFlagAtom } from '../ControlArea';
 import * as builtinServices from '../../../services/recognize';
-import { useConfig } from '../../../hooks';
+import { useConfig, useSpeech } from '../../../hooks';
 import { imageFlagAtom } from '../ImageArea';
 
 export const textAtom = atom();
@@ -32,6 +33,7 @@ export default function TextArea(props) {
     const [text, setText] = useAtom(textAtom);
     const [error, setError] = useState('');
     const { t } = useTranslation();
+    const speak = useSpeech();
 
     useEffect(() => {
         setText('');
@@ -154,6 +156,19 @@ export default function TextArea(props) {
                             }}
                         >
                             <MdContentCopy className='text-[16px]' />
+                        </Button>
+                    </Tooltip>
+                    <Tooltip content={t('recognize.speak')}>
+                        <Button
+                            isIconOnly
+                            size='sm'
+                            variant='light'
+                            isDisabled={!text}
+                            onPress={() => {
+                                speak(text, language);
+                            }}
+                        >
+                            <HiOutlineVolumeUp className='text-[16px]' />
                         </Button>
                     </Tooltip>
                     <Tooltip content={t('recognize.delete_newline')}>

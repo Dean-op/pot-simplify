@@ -219,6 +219,7 @@
         "translate": {
             "translate": "Translate",
             "copy": "Copy",
+            "speak": "Speak",
             "retry": "Try again",
             "delete_newline": "Delete Newline",
             "translate_back": "Translation back to the original"
@@ -228,6 +229,7 @@
             "translate": "Translate",
             "copy_img": "Copy Image",
             "copy_text": "Copy",
+            "speak": "Speak",
             "delete_newline": "Delete Newline",
             "delete_space": "Delete Space"
         }

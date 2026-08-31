@@ -8,11 +8,12 @@ import { MdContentCopy } from 'react-icons/md';
 import { MdSmartButton } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { HiTranslate } from 'react-icons/hi';
+import { HiOutlineVolumeUp } from 'react-icons/hi';
 import { LuDelete } from 'react-icons/lu';
 import { invoke } from '@tauri-apps/api';
 import { atom, useAtom } from 'jotai';
 import { getServiceName } from '../../../../utils/service_instance';
-import { useConfig, useSyncAtom, useToastStyle } from '../../../../hooks';
+import { useConfig, useSyncAtom, useToastStyle, useSpeech } from '../../../../hooks';
 import * as recognizeServices from '../../../../services/recognize';
 import detect from '../../../../utils/lang_detect';
 import { store } from '../../../../utils/store';
@@ -49,6 +50,7 @@ export default function SourceArea(props) {
     const toastStyle = useToastStyle();
     const { t } = useTranslation();
     const textAreaRef = useRef();
+    const speak = useSpeech();
 
     // setSourceText 是 useState，而 syncSourceText 读的是渲染时才写的那个 ref，
     // 所以不能在同一个 tick 里直接 sync（原来是靠 await 语种检测顺带等到了下一次
@@ -335,6 +337,19 @@ export default function SourceArea(props) {
                                     }}
                                 >
                                     <MdContentCopy className='text-[16px]' />
+                                </Button>
+                            </Tooltip>
+                            <Tooltip content={t('translate.speak')}>
+                                <Button
+                                    isIconOnly
+                                    variant='light'
+                                    size='sm'
+                                    isDisabled={sourceText === ''}
+                                    onPress={() => {
+                                        speak(sourceText, detectLanguage);
+                                    }}
+                                >
+                                    <HiOutlineVolumeUp className='text-[16px]' />
                                 </Button>
                             </Tooltip>
                             <Tooltip content={t('translate.delete_newline')}>

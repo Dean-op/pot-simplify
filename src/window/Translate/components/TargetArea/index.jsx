@@ -30,7 +30,7 @@ import { useSpring, animated } from '@react-spring/web';
 import useMeasure from 'react-use-measure';
 
 import { sourceLanguageAtom, targetLanguageAtom } from '../LanguageArea';
-import { useConfig, useToastStyle, useVoice } from '../../../../hooks';
+import { useConfig, useToastStyle, useVoice, useSpeech } from '../../../../hooks';
 import { sourceTextAtom, detectLanguageAtom, waitDetectLanguage } from '../SourceArea';
 import * as builtinServices from '../../../../services/translate';
 
@@ -68,6 +68,7 @@ export default function TargetArea(props) {
     const textAreaRef = useRef();
     const toastStyle = useToastStyle();
     const speak = useVoice();
+    const speakText = useSpeech();
     const theme = useTheme();
 
     useEffect(() => {
@@ -457,6 +458,20 @@ export default function TargetArea(props) {
                                     }}
                                 >
                                     <MdContentCopy className='text-[16px]' />
+                                </Button>
+                            </Tooltip>
+                            {/* speak button */}
+                            <Tooltip content={t('translate.speak')}>
+                                <Button
+                                    isIconOnly
+                                    variant='light'
+                                    size='sm'
+                                    isDisabled={typeof result !== 'string' || result === ''}
+                                    onPress={() => {
+                                        speakText(result, targetLanguage);
+                                    }}
+                                >
+                                    <HiOutlineVolumeUp className='text-[16px]' />
                                 </Button>
                             </Tooltip>
                             {/* translate back button */}

@@ -219,6 +219,7 @@
         "translate": {
             "translate": "翻译",
             "copy": "复制",
+            "speak": "朗读",
             "retry": "重试",
             "delete_newline": "删除换行",
             "translate_back": "翻译回原文"
@@ -228,6 +229,7 @@
             "translate": "翻译",
             "copy_img": "复制图片",
             "copy_text": "复制",
+            "speak": "朗读",
             "delete_newline": "删除换行",
             "delete_space": "删除空格"
         }
