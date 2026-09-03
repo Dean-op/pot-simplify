@@ -214,7 +214,13 @@
             "fetch_model_list": "拉取模型列表",
             "model_list_pick": "从列表中选择模型",
             "model_list_loaded": "已拉取 {{count}} 个模型",
-            "model_list_failed": "拉取模型列表失败："
+            "model_list_failed": "拉取模型列表失败：",
+            "http_error": {
+                "html_page": "服务端返回的是一个错误页面，不是正常结果。",
+                "google_blocked": "已依次试过 {{hosts}}，全部被拒。这基本说明整条出口 IP 被谷歌判成了自动化查询 —— 走代理或 VPN 时出口 IP 是和很多人共用的，别人的用量也算在你头上。客户端绕不过去：换一个代理节点，或者把 OpenAI 兼容服务设成主力翻译。",
+                "ecdict_upstream": "这个词典接口在上游作者的服务器 pot-app.com 上，目前不可用，客户端绕不过去。查英汉词建议改用 OpenAI 兼容服务（可以在它的 Prompt 里加一条词典指令）。",
+                "bing_dict_disabled": "必应词典用的是从网页里抠出来的内部 appid，微软已经把它停用了，换 IP、换 UA 都没用，所有人都是这个结果，不是你这边的问题。查英汉词建议改用 OpenAI 兼容服务。"
+            }
         },
         "translate": {
             "translate": "翻译",

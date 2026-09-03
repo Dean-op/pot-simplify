@@ -114,12 +114,12 @@ async function google_detect(text) {
         uk: 'uk'
     };
     let res = await fetch(
-        `https://translate.google.com/translate_a/single?dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t`,
+        `https://clients5.google.com/translate_a/single?dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t`,
         {
             method: 'GET',
             headers: { 'content-type': 'application/json' },
             query: {
-                client: 'gtx',
+                client: 'dict-chrome-ex',
                 sl: 'auto',
                 tl: 'zh-CN',
                 hl: 'zh-CN',
