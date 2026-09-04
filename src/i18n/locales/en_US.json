@@ -217,9 +217,7 @@
             "model_list_failed": "Failed to fetch model list: ",
             "http_error": {
                 "html_page": "The server returned an error page instead of a result.",
-                "google_blocked": "Tried {{hosts}} in order — all refused. That points at the whole exit IP being flagged by Google as automated traffic; behind a proxy or VPN the exit IP is shared, so other people's volume counts against you. The client cannot work around this: switch proxy node, or make an OpenAI-compatible service your primary translator.",
-                "ecdict_upstream": "This dictionary endpoint lives on the upstream author's server (pot-app.com) and is currently unavailable — the client cannot work around it. For English-Chinese lookups, use an OpenAI-compatible service instead (you can add a dictionary instruction to its prompt).",
-                "bing_dict_disabled": "Bing Dictionary relies on an internal appid scraped from its web page, and Microsoft has disabled it. Changing IP or User-Agent makes no difference — everyone gets this, it is not something on your side. Use an OpenAI-compatible service for dictionary lookups instead."
+                "google_blocked": "Tried {{hosts}} in order — all refused. That points at the whole exit IP being flagged by Google as automated traffic; behind a proxy or VPN the exit IP is shared, so other people's volume counts against you. The client cannot work around this: switch proxy node, or make an OpenAI-compatible service your primary translator."
             }
         },
         "translate": {

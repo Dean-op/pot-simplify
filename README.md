@@ -46,11 +46,10 @@ Fork 自 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7，
 
 -   OpenAI 兼容端点 —— 内置 [阿里百炼](https://bailian.console.aliyun.com/)、[硅基流动](https://cloud.siliconflow.cn/)、[OpenAI](https://platform.openai.com/) 三个预设，也可以填任意自定义地址；支持一键拉取模型列表；同一个服务可以加多个实例，翻译和识别各配各的模型
 -   [Google 翻译](https://translate.googleapis.com) —— 按 `translate.googleapis.com` → `clients5.google.com` → `translate.google.com` 顺序轮换。三个入口路径和返回结构一样但配额桶不同，前一个被限流就换下一个
--   Bing 词典 —— **目前全网失效**。它用的是从必应词典网页里抠出来的内部 appid，微软已停用，换 IP / UA 都回 403
+-   [Bing 词典](https://cn.bing.com/dict) —— 抓取必应官方网页词典，支持中英音标、发音、词性释义、变形与例句
 -   [剑桥词典](https://dictionary.cambridge.org/) —— 抓网页，走 Cloudflare，机房 IP 容易被挡
--   ECDICT(在线) —— 英汉词典，但**不是**本地的 [ECDICT](https://github.com/skywind3000/ECDICT) 数据库，而是把文本 POST 到上游作者的服务器 `pot-app.com/api/dict`。该接口目前返回 405 不可用
+-   ECDICT(在线) —— 基于有道开放词典接口，提供丰富的英汉/汉英释义、音标、真人发音与例句
 
-> 三个词典服务都依赖别人的站点，随时可能挂。要稳定查词，用 OpenAI 兼容服务加一条词典 Prompt。
 
 **文字识别**
 
