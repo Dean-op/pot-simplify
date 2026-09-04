@@ -2,7 +2,7 @@
 
 # pot-simplify
 
-> 划词翻译 + 截图文字识别。只跑在 Windows 上的个人精简 fork。
+> 专为 Windows 平台打造的划词翻译与截图文字识别工具，轻量、极速、低资源占用。
 
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![Tauri](https://img.shields.io/badge/Tauri-1.8-blue?logo=tauri)
@@ -11,117 +11,138 @@
 <br/>
 <hr/>
 
-## 这是什么
+## 基本介绍
 
-Fork 自 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7，按「只要翻译、文字识别、快捷键」的目标做了大幅精简，同时只保留 Windows 平台。完整的改造记录、取舍理由和实测数据在 [docs/精简与性能优化方案.md](docs/精简与性能优化方案.md)。
+**pot-simplify** 是一个专为 Windows 平台深度精简和优化的桌面翻译与 OCR 工具，Fork 自开源项目 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7。
 
-相对上游的主要差异：
+本项目围绕 **“核心聚焦、开箱即用、极速响应”** 的理念，剔除了冗余繁杂的跨平台抽象、插件系统、无鉴权本地 HTTP 服务与臃肿的第三方离线包，专注于日常查词、翻译与多模态 LLM 提速体验。
 
-|          | 上游                    | 这里                                       |
-| -------- | ----------------------- | ------------------------------------------ |
-| 平台     | Windows / macOS / Linux | 只有 Windows，只出 NSIS 安装包             |
-| 翻译服务 | 21 个内置 + 插件        | 5 个内置，云端统一走 OpenAI 兼容端点       |
-| 文字识别 | 15 个内置 + 插件        | 2 个：Windows 系统 OCR、LLM 视觉 OCR       |
-| 界面语言 | 19 种                   | 中文 / English                             |
-| 设置页   | 8 项                    | 5 项：常规 / 翻译 / 文字识别 / 热键 / 服务 |
+### 相对上游的主要差异
 
-整块移除的功能：插件系统（含大龙虾翻译）、本地 HTTP 服务（`60828` 端口，无鉴权）、自动更新、备份设置、关于页、历史记录、生词本、语音合成、网络代理设置，以及 4 MB 的 tesseract wasm。
+| 维度 | 上游 (pot-desktop) | 本项目 (pot-simplify) |
+| --- | --- | --- |
+| **支持平台** | Windows / macOS / Linux | 专注 Windows，仅打包 NSIS 安装包 |
+| **翻译服务** | 21 个内置服务 + 外部插件 | 精简为 5 个核心服务，云端统一走 OpenAI 兼容端点 |
+| **文字识别** | 15 个内置服务 + 外部插件 | 精简为 2 个：Windows 系统 OCR + LLM 视觉 OCR |
+| **离线语种检测** | 22 个语种模型（体积约 20MB） | 精简 lingua 至中日英 3 语种模型（体积压缩至 1.18MB） |
+| **界面语言** | 19 种多语言支持 | 精简按需加载，仅保留简体中文与英文 |
+| **设置项** | 8 项繁杂设置 | 精简为 5 项：常规 / 翻译 / 文字识别 / 热键 / 服务 |
 
-## 用法
+> 彻底移除了外部插件系统、本地无鉴权 HTTP 端口（60828）、自动更新服务、设置备份同步、关于页、生词本、网络代理配置以及 4MB 的 Tesseract WASM 文件。
 
-四个全局快捷键，在 设置 → 热键 里配置，默认都是空的：
+---
 
-| 快捷键   | 作用                             |
-| -------- | -------------------------------- |
-| 划词翻译 | 选中文字后按下，弹出翻译窗口     |
-| 输入翻译 | 呼出空白翻译窗口，输入后回车翻译 |
-| 截图 OCR | 框选屏幕区域，识别其中文字       |
-| 截图翻译 | 框选屏幕区域，识别后直接翻译     |
+## 核心功能
 
-翻译窗口左上角的图标可以开启剪贴板监听，开着的时候复制任何文字都会自动翻译。托盘菜单里有输入翻译、监听剪切板、自动复制（原文 / 译文 / 原文+译文 / 关闭）、文字识别、截图翻译、偏好设置、查看日志、重启应用、退出；单击托盘图标触发哪个动作可以在 设置 → 常规 里改。
+### 1. 划词与输入翻译
+- **OpenAI 兼容端点**：内置阿里百炼、硅基流动、OpenAI 三大服务商预设，亦可自由填写任意兼容端点；支持一键拉取模型列表；支持按需添加多个服务实例。
+- **思考模式优化**：针对 DeepSeek、百炼等推理模型支持强制关闭思考链，消除短句翻译时的无谓 Token 消耗，实现首字毫秒级秒出。
+- **谷歌翻译容灾轮换**：按 `translate.googleapis.com` → `clients5.google.com` → `translate.google.com` 顺序自动轮换，避免单节点触发 429 访问受限。
+- **高可用词典查询**：
+  - **Bing 词典**：抓取必应官方网页词典，支持美英音标、真人发音音频、词性释义、词形变形及双语例句。
+  - **ECDict(在线)**：基于有道开放接口提供稳定查词支持，具备丰富的汉英/英汉释义、音标发音与例句。
+  - **剑桥词典**：抓取剑桥官方双语词典，提供权威释义。
+- **长句自动识别与过滤**：智能判断输入文本，段落与长句子自动跳过词典接口请求，既杜绝无效网络流量与报错，又保持界面整洁优雅。
+- **离线语音朗读**：基于 WebView2 原生语音合成（SpeechSynthesis），离线调用系统语音库，免费零依赖。
 
-## 支持的服务
+### 2. 截图文字识别 (OCR)
+- **Windows 系统 OCR**：直接调用 Windows 原生 WinRT `Windows.Media.Ocr`，毫秒级快速返回，无需联网，离线且零额外模型体积。
+- **LLM 视觉多模态识别**：
+  - 支持调用 Qwen-VL 等视觉大模型识别图中文本；
+  - **图片长边自动缩放**：超过设定尺寸（默认 2048px）自动压缩分辨率，大幅减少 Token 计费与网络上传开销；
+  - **流式输出 (SSE)**：文字边识别边输出，显著缩短首字呈现时间。
 
-**翻译**
+### 3. 系统集成与交互体验
+- **剪贴板监听**：开启后复制任意文字自动触发翻译。
+- **全局快捷键**：支持划词翻译、输入翻译、截图 OCR、截图翻译四大核心功能一键呼出。
+- **多显示器自适应**：精准计算 DPI 与屏幕边界，弹窗自动跟随光标且贴边防溢出。
 
--   OpenAI 兼容端点 —— 内置 [阿里百炼](https://bailian.console.aliyun.com/)、[硅基流动](https://cloud.siliconflow.cn/)、[OpenAI](https://platform.openai.com/) 三个预设，也可以填任意自定义地址；支持一键拉取模型列表；同一个服务可以加多个实例，翻译和识别各配各的模型
--   [Google 翻译](https://translate.googleapis.com) —— 按 `translate.googleapis.com` → `clients5.google.com` → `translate.google.com` 顺序轮换。三个入口路径和返回结构一样但配额桶不同，前一个被限流就换下一个
--   [Bing 词典](https://cn.bing.com/dict) —— 抓取必应官方网页词典，支持中英音标、发音、词性释义、变形与例句
--   [剑桥词典](https://dictionary.cambridge.org/) —— 抓网页，走 Cloudflare，机房 IP 容易被挡
--   ECDICT(在线) —— 基于有道开放词典接口，提供丰富的英汉/汉英释义、音标、真人发音与例句
+---
 
+## 快速开始
 
-**文字识别**
+### 安装方式
 
--   Windows 系统 OCR —— 走 [Windows.Media.Ocr](https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr.ocrengine)，离线、免费、毫秒级返回
--   LLM 视觉 OCR —— 把截图发给多模态模型识别，和翻译共用同一套 OpenAI 兼容配置
+你可以通过以下三种途径获取安装包：
 
-> 填地址时写到 `https://host`、`https://host/v1` 或完整的 `https://host/v1/chat/completions` 都可以，程序会自己补全。
+1. **从 Releases 下载**：
+   - 访问仓库 Releases 页面下载最新发布的 `pot-simplify_<版本>_x64-setup.exe`。
+2. **从 GitHub Actions 下载**：
+   - 进入 Actions 页面选择最新的构建记录，在页面底部 `Artifacts` 中直接下载构建产物压缩包。
+3. **本地编译构建**：
+   - 参考后文常用命令进行本地源码打包。
 
-## 觉得翻译慢的时候先看这两处
+### 初始配置指南
 
-**思考模式**（翻译服务配置里的下拉框，默认关）。现在的推理模型大多默认开着思考链，翻一句话要先输出几百个思考 token。实测硅基流动的 `deepseek-ai/DeepSeek-V4-Flash` 翻同一句话：跟随模型默认要 206~272 个 completion token、5~7 秒；显式关掉思考只有 19 个 token、1 秒上下。参数按域名分派（DeepSeek 用 `thinking`，百炼和硅基流动用 `enable_thinking`，其余域名不发，免得 OpenAI 因为不认识的字段直接 400）。需要长推理时再手动开。
+安装完成后，建议依次完成以下初始化配置：
+1. **热键设置**（设置 → 热键）：配置你顺手的全局快捷键（默认留空，需自行分配），常用包括「划词翻译」与「截图 OCR」。
+2. **服务配置**（设置 → 服务）：添加 OpenAI 兼容服务并填入 API Key，选择翻译与识别所需的大模型。
+3. **开机自启**（设置 → 常规）：根据需要选择是否跟随 Windows 登录自启动。
 
-**语种检测引擎**（设置 → 翻译，默认「本地」）。本地引擎用嵌进程序的 lingua 模型，只留了中日英三个语种，检测不走网络。检测和翻译是并发的，不会拖慢出译文的时间——检测结果只用于界面上的语言标签、译文语言和检测语言撞车时切到第二目标语言、以及系统 OCR 判断是不是中文好去掉字间空格。发给翻译服务的源语言始终是 `auto`，所以检测错了也不会把源语言标错。
+> [!IMPORTANT]
+> **旧版升级须知**：
+> - 可执行文件已从 `pot.exe` 更名为 `pot-simplify.exe`。若曾安装过官方旧版，建议先在系统「应用和功能」中卸载旧版。
+> - 配置数据与日志依然保存在 `%APPDATA%\com.pot-app.desktop`，升级安装后历史 API Key 与热键配置将完整保留。
 
-## 安装
+---
 
-三种拿到安装包的方式，选一种就行。
+## 常用命令
 
-**从 Releases 下载**（打过 tag 才有）。在本地打一个 tag 推上去，CI 会把三个架构的安装包传到 Release：
+开发与维护常用的脚本与命令一览：
+
+### 环境要求
+- **Node.js** >= 18
+- **pnpm** >= 9
+- **Rust** >= 1.80.0
+- **Visual Studio MSVC** C++ 构建工具链
+
+### 常用命令列表
 
 ```powershell
-git tag 3.1.0
-git push origin 3.1.0
-```
-
-tag 名必须是 `x.y.z`（`v3.1.0` 也行，`v` 会被去掉），它会成为安装包的版本号；没有 tag 时沿用 `package.json` 里的版本。
-
-**从 Actions 下载**（每次推 master 或手动触发都有）。进仓库的 Actions 页面，选最新一次 Package 运行，页面底部 Artifacts 里有 `windows_x86_64-pc-windows-msvc` 等六个压缩包，解开就是 `.exe` 安装程序。保留期 90 天。不想为了拿包专门推 commit 的话，在 Actions 页面点 Run workflow 手动跑一次。
-
-**本地自己构建**：
-
-```powershell
+# 1. 依赖安装
 pnpm install
-pnpm tauri build          # 产物在 src-tauri/target/release/bundle/nsis/
+
+# 2. 启动开发模式（前端 + Tauri 桌面容器）
+pnpm tauri dev
+
+# 3. 仅启动前端 Vite 开发服务器
+pnpm dev
+
+# 4. 前端打包编译测试
+pnpm build
+
+# 5. Rust 后端类型与编译检查
+cargo check --manifest-path src-tauri/Cargo.toml
+
+# 6. 打包 Windows 生产发布包 (NSIS 安装包)
+pnpm tauri build
+# 构建产物位于: src-tauri/target/release/bundle/nsis/
+
+# 7. 运行项目全量校验（版本号对齐 + 依赖锁定校验 + 前端编译 + Cargo 检查）
+.\.scripts\verify.ps1
+
+# 8. 由 SVG 源文件重新生成各尺寸应用图标
+python .\.scripts\gen_icon.py
 ```
 
-首次 release 构建因为开了 LTO 会比较久（十几分钟量级），之后增量快很多。
+### 全局快捷键功能说明
 
-安装包是 NSIS 的 `pot-simplify_<版本>_x64-setup.exe`，per-machine 安装，会要管理员权限，装到 `Program Files\pot-simplify` 并建开始菜单快捷方式；卸载走「应用和功能」。配置和日志仍在 `%APPDATA%\com.pot-app.desktop`——这个目录名由 bundle identifier 决定，改名时故意没动它，否则老的热键和 API key 全部作废。卸载不会清空它，所以重装或换版本设置都还在。
+| 快捷动作 | 默认触发行为 |
+| --- | --- |
+| **划词翻译** | 选中文本后按下快捷键，自动读取屏幕选区文字并呼出翻译窗 |
+| **输入翻译** | 呼出空白翻译卡片，输入文本并按回车直接翻译 |
+| **截图 OCR** | 唤起全屏半透明选区截图，框选文本后完成文字识别 |
+| **截图翻译** | 框选屏幕指定文字区域，完成识别后无缝进行翻译 |
 
-CI 一共出六个包：三个架构各一个普通版，加三个 `*_fix_webview2_runtime-setup.exe`——后者把固定版本的 WebView2 运行时打进了安装包，体积大很多，只在系统里 WebView2 被卸载或禁用、装不上的环境才需要。启动后没有界面、点托盘图标没反应，基本都是这个原因。
+---
 
-装完记得先去 设置 → 热键 配四个快捷键（默认全空），以及 设置 → 服务 里填 API key。想开机自启的话在 设置 → 常规 里打开。
+## 开源说明
 
-如果之前装过叫 `pot` 的旧版本：可执行文件名从 `pot.exe` 变成了 `pot-simplify.exe`，安装目录也跟着变，所以要先在「应用和功能」里卸掉旧的，否则两份并存。开机自启是按可执行文件名写进注册表 `HKCU\...\CurrentVersion\Run` 的，旧的那条 `pot` 不会被卸载程序清掉，装完新版后到 设置 → 常规 里关一次再开一次即可。设置本身不受影响。
+本项目采用 **GPL-3.0** 开源许可证，遵循并继承上游项目许可。
 
-## 开发
+### 致谢
+- [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) —— 优秀的开源跨平台翻译应用，本项目之上游基础
+- [Bob](https://github.com/ripperhe/Bob) —— 优秀的 macOS 查词工具与交互灵感来源
+- [Tauri](https://github.com/tauri-apps/tauri) —— 安全轻量且高性能的桌面端混合框架
+- [lingua-rs](https://github.com/pemistahl/lingua-rs) —— 精准的离线自然语言识别库
 
-环境要求：Node.js >= 18、pnpm 9、Rust >= 1.80.0、MSVC 工具链。
-
-```powershell
-pnpm install
-pnpm tauri dev            # 开发模式
-pnpm build                # 只构建前端
-cd src-tauri && cargo check --target x86_64-pc-windows-msvc
-.scripts\verify.ps1       # 版本检查 + frozen-lockfile 安装 + 前端构建 + cargo check
-```
-
-几件容易踩的事：
-
--   仓库统一 LF 行尾（`.gitattributes` 已配），改文件别写 CRLF
--   代码格式是 prettier，配置文件名是 `.prettierrc.json`；`src/utils/lang_detect.js` 和 `src-tauri/tauri.conf.json` 从上游继承下来就不合规，别顺手格式化
--   Rust 侧整体不是 rustfmt-clean，只格式化自己重写过的文件，不要跑全项目 `cargo fmt`
--   `src-tauri/webview.{x64,x86,arm64}.json` 看着没人引用，其实是 CI 里那个固定 WebView2 版本的 job 改名顶掉 `tauri.windows.conf.json` 用的，别删
--   `tauri.conf.json` 的 allowlist 和 `Cargo.toml` 的 tauri features 必须成对增删，否则 build script 直接报错
--   图标全部由 `.scripts/gen_icon.py` 从一份 SVG 生成（`src-tauri/icons/` + `public/icon.png` + `public/icon.svg`），改图标改脚本，别手动改 PNG
-
-## 许可与致谢
-
-GPL-3.0，跟随上游。
-
--   [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) —— 本仓库的上游
--   [Bob](https://github.com/ripperhe/Bob) —— 灵感来源
--   [Tauri](https://github.com/tauri-apps/tauri) —— GUI 框架
--   [lingua-rs](https://github.com/pemistahl/lingua-rs) —— 离线语种检测
