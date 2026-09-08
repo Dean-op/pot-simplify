@@ -38,42 +38,49 @@ fn save_png_fast(path: &std::path::Path, img: &image::RgbaImage) -> Result<(), i
     encode_png_fast(BufWriter::new(File::create(path)?), img)
 }
 
-// 视觉模型是按像素数收 token 的（Qwen-VL 每 28×28 一个），一张 1440p 的截图
-// 光是上传加 prefill 就要好几秒，而认字并不需要这么高的分辨率。超过上限就等
-// 比缩到上限；没超、或者尺寸都读不出来，返回 None 让调用方用原图，连解码都省。
-//
-// 只缩发给模型的这一份，磁盘上的 cut png 保持原样——复制图片和识别窗口里的
-// 预览都指着它。
-fn shrink_png(png: &[u8], max_edge: u32) -> Option<Vec<u8>> {
+// 视觉模型按像素数和长边收 token，同时发给模型的图片如果是无损 PNG，
+// 一张 1080p 截图就有数 MB，Base64 膨胀后严重拖慢网络上传（上行带宽通常只有 10~30Mbps）。
+// 这里把发给模型的图片转为 JPEG（Quality 85），体积直降 80%~90%（从数 MB 降到 100~300KB），
+// 若超过 max_edge 还会等比缩小，大幅缩减上传时间与模型 ViT 编码开销。
+// 磁盘上的原图（pot_simplify_screenshot_cut.png）依然保留无损 PNG，供本地 UI 预览和剪贴板复制。
+fn to_jpeg(png_bytes: &[u8], max_edge: Option<u32>, quality: u8) -> Result<Vec<u8>, image::ImageError> {
+    use image::codecs::jpeg::JpegEncoder;
     use image::imageops::FilterType;
+    use image::{ExtendedColorType, ImageEncoder};
     use std::io::Cursor;
 
-    // 先只读文件头拿尺寸，不解整张图
-    let (width, height) = image::ImageReader::new(Cursor::new(png))
-        .with_guessed_format()
-        .ok()?
-        .into_dimensions()
-        .ok()?;
+    let img = image::load_from_memory(png_bytes)?;
+    let (width, height) = (img.width(), img.height());
     let long_edge = width.max(height);
-    if long_edge <= max_edge {
-        return None;
-    }
 
-    let scale = max_edge as f64 / long_edge as f64;
-    let new_width = ((width as f64 * scale).round() as u32).max(1);
-    let new_height = ((height as f64 * scale).round() as u32).max(1);
-    let img = image::load_from_memory(png).ok()?.to_rgba8();
-    // Triangle：缩小文字比 Nearest 干净得多，又比 Lanczos3 快
-    let resized = image::imageops::resize(&img, new_width, new_height, FilterType::Triangle);
-    info!(
-        "Shrink image: {}x{} -> {}x{}",
-        width, height, new_width, new_height
-    );
+    let rgb_img = if let Some(max_edge) = max_edge {
+        if max_edge > 0 && long_edge > max_edge {
+            let scale = max_edge as f64 / long_edge as f64;
+            let new_width = ((width as f64 * scale).round() as u32).max(1);
+            let new_height = ((height as f64 * scale).round() as u32).max(1);
+            info!(
+                "Shrink and convert image for LLM: {}x{} -> {}x{}",
+                width, height, new_width, new_height
+            );
+            let resized = image::imageops::resize(&img.to_rgba8(), new_width, new_height, FilterType::Triangle);
+            image::DynamicImage::ImageRgba8(resized).into_rgb8()
+        } else {
+            img.into_rgb8()
+        }
+    } else {
+        img.into_rgb8()
+    };
 
     let mut out = Cursor::new(Vec::new());
-    encode_png_fast(&mut out, &resized).ok()?;
-    Some(out.into_inner())
+    JpegEncoder::new_with_quality(&mut out, quality).write_image(
+        rgb_img.as_raw(),
+        rgb_img.width(),
+        rgb_img.height(),
+        ExtendedColorType::Rgb8,
+    )?;
+    Ok(out.into_inner())
 }
+
 
 #[tauri::command]
 pub fn get_text(state: tauri::State<StringWrapper>) -> String {
@@ -149,7 +156,6 @@ pub fn get_base64(app_handle: tauri::AppHandle, max_edge: Option<u32>) -> String
     if !path.exists() {
         return "".to_string();
     }
-    // 直接读 cut_image 刚写下去的 PNG：省一次解码 + 重新编码
     let vec = match fs::read(&path) {
         Ok(v) => v,
         Err(e) => {
@@ -157,11 +163,9 @@ pub fn get_base64(app_handle: tauri::AppHandle, max_edge: Option<u32>) -> String
             return "".to_string();
         }
     };
-    let vec = match max_edge {
-        Some(max_edge) if max_edge > 0 => shrink_png(&vec, max_edge).unwrap_or(vec),
-        _ => vec,
-    };
-    general_purpose::STANDARD.encode(&vec)
+    // 发给模型前转为高质量 JPEG（Quality 85）并根据 max_edge 缩放，体积暴降 80%~90%
+    let jpeg = to_jpeg(&vec, max_edge, 85).unwrap_or(vec);
+    general_purpose::STANDARD.encode(&jpeg)
 }
 
 #[tauri::command]

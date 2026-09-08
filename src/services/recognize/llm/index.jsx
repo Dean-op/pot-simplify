@@ -51,7 +51,12 @@ export async function recognize(base64, lang, options = {}) {
                 role: 'user',
                 content: [
                     { type: 'text', text: promptText },
-                    { type: 'image_url', image_url: { url: `data:image/png;base64,${base64}` } },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${base64.startsWith('/9j/') ? 'image/jpeg' : 'image/png'};base64,${base64}`,
+                        },
+                    },
                 ],
             },
         ],
