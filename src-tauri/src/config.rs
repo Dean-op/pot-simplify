@@ -44,6 +44,8 @@ pub fn check_service_available() -> Result<(), Error> {
     let builtin_recognize_list: Vec<&str> = vec!["system", "llm"];
     let builtin_translate_list: Vec<&str> = vec![
         "openai",
+        "youdao",
+        "baidu",
         "google",
         "bing_dict",
         "cambridge_dict",

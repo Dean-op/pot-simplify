@@ -16,6 +16,7 @@ export default function Translate() {
     const [currentConfigKey, setCurrentConfigKey] = useState('google');
     // now it's service instance list
     const [translateServiceInstanceList, setTranslateServiceInstanceList] = useConfig('translate_service_list', [
+        'youdao',
         'google',
         'ecdict',
     ]);

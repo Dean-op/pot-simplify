@@ -156,6 +156,20 @@
             "no_need": "No configuration required",
             "instance_name": "Configuration Name",
             "translate": {
+                "youdao": {
+                    "title": "Youdao",
+                    "description": "Works out of the box with zero configuration (direct domestic connection for sentences and paragraphs). If you have a Youdao Zhiyun account, you can optionally provide your AppKey and Secret.",
+                    "appkey": "AppKey (Optional)",
+                    "key": "Secret (Optional)",
+                    "optional_tip": "Leave empty for free zero-config channel"
+                },
+                "baidu": {
+                    "title": "Baidu",
+                    "description": "Baidu Translate Open Platform offers free monthly quota (50k chars/mo standard, 1M chars/mo verified, free forever).",
+                    "apply_free_key": "Get Free Quota",
+                    "appid": "App ID",
+                    "secret": "Secret"
+                },
                 "google": {
                     "title": "Google",
                     "custom_url": "Custom URL"

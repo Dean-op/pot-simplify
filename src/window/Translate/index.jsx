@@ -65,6 +65,7 @@ export default function Translate() {
     const [windowPosition] = useConfig('translate_window_position', 'mouse');
     const [rememberWindowSize] = useConfig('translate_remember_window_size', false);
     const [translateServiceInstanceList, setTranslateServiceInstanceList] = useConfig('translate_service_list', [
+        'youdao',
         'google',
         'ecdict',
     ]);

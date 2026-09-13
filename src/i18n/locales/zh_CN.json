@@ -156,6 +156,20 @@
             "no_need": "无需配置",
             "instance_name": "配置名称",
             "translate": {
+                "youdao": {
+                    "title": "有道翻译",
+                    "description": "默认免配置即可直接免费使用（国内直连、极速翻译长句段落）。若拥有有道智云开发者账号，可填写专属 AppKey 与密钥。",
+                    "appkey": "AppKey (选填)",
+                    "key": "密钥 (选填)",
+                    "optional_tip": "留空即走免配置极速通道"
+                },
+                "baidu": {
+                    "title": "百度翻译",
+                    "description": "百度翻译开放平台提供每月免费翻译额度（标准版 5万字/月，个人实名认证高级版 100万字/月，永久免费）。",
+                    "apply_free_key": "免费领取额度",
+                    "appid": "App ID",
+                    "secret": "密钥"
+                },
                 "google": {
                     "title": "谷歌翻译",
                     "custom_url": "自定义 URL"
