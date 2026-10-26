@@ -3,7 +3,7 @@
 # bundle identifier 故意仍是 com.pot-app.desktop——它决定 %APPDATA% 下的
 # 配置/日志目录，改了等于把老设置（热键、API key）全丢掉。
 name = "pot-simplify"
-version = "0.0.0"
+version = "3.1.0"
 description = "A text translation and OCR tool for Windows"
 authors = ["Dean", "pot-app"]
 license = "GPL-3.0-only"

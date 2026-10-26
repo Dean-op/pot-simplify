@@ -2,6 +2,7 @@ name: Package
 on:
     push:
         branches: [master]
+        tags: ['v*']
     # 手动触发，不用为了拿一个安装包专门推一次 commit
     workflow_dispatch:
 # 只需要建 Release 和上传产物的权限
@@ -19,17 +20,16 @@ jobs:
               with:
                   fetch-depth: 0
 
-            # 版本号优先取最近的 tag，没有 tag 就沿用 package.json 里的值。
-            # 上游原来是直接 `git describe --tags`，仓库里一个 tag 都没有时它会失败，
-            # 但外层是 echo，步骤照样绿灯，结果把空字符串写进 tauri.conf.json，
-            # 到 tauri build 才报 `package > version` must be a semver string。
+            # tag 触发时以 tag 为准；普通 master 构建以 package.json 为准。
+            # 不能用 git describe 推断：在已发布版本的提交上打新 tag 时，
+            # describe 可能仍返回旧 tag，导致安装包版本号错误。
             - id: outputstep
               run: |
-                  VERSION=$(git describe --tags --abbrev=0 2>/dev/null || true)
-                  VERSION=${VERSION#v}
-                  if [ -z "$VERSION" ]; then
+                  if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+                      VERSION="${GITHUB_REF#refs/tags/v}"
+                  else
                       VERSION=$(node -p "require('./package.json').version")
-                      echo "没有 tag，沿用 package.json 里的版本号 $VERSION"
+                      echo "非 tag 构建，使用 package.json 里的版本号 $VERSION"
                   fi
                   if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
                       echo "::error::版本号 '$VERSION' 不是 x.y.z 形式，tauri 会拒绝"
