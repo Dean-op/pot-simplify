@@ -6,7 +6,7 @@ use log::{error, info, warn};
 use tauri::Manager;
 
 // 截图缓存都放在 %LOCALAPPDATA%\<identifier>\ 下
-fn cache_file(app_handle: &tauri::AppHandle, name: &str) -> std::path::PathBuf {
+pub(crate) fn cache_file(app_handle: &tauri::AppHandle, name: &str) -> std::path::PathBuf {
     use dirs::cache_dir;
     let mut path = cache_dir().expect("Get Cache Dir Failed");
     path.push(&app_handle.config().tauri.bundle.identifier);

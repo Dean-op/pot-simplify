@@ -7,6 +7,7 @@ mod config;
 mod error;
 mod hotkey;
 mod lang_detect;
+mod qr;
 mod screenshot;
 mod system_ocr;
 mod tray;

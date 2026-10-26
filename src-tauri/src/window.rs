@@ -1,5 +1,6 @@
 use crate::config::get;
 use crate::config::set;
+use crate::qr;
 use crate::StringWrapper;
 use crate::APP;
 use log::{info, warn};
@@ -329,5 +330,13 @@ pub fn ocr_translate() {
     window.listen("success", move |event| {
         image_translate();
         window_.unlisten(event.id())
+    });
+}
+
+pub fn qr_recognize() {
+    let window = screenshot_window();
+    window.once("success", move |_event| {
+        let app_handle = APP.get().unwrap().clone();
+        std::thread::spawn(move || qr::scan_selection(&app_handle));
     });
 }

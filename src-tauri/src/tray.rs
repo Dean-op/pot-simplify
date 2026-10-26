@@ -4,6 +4,7 @@ use crate::window::config_window;
 use crate::window::input_translate;
 use crate::window::ocr_recognize;
 use crate::window::ocr_translate;
+use crate::window::qr_recognize;
 use log::info;
 use tauri::CustomMenuItem;
 use tauri::GlobalShortcutManager;
@@ -93,6 +94,7 @@ pub fn tray_event_handler<'a>(app: &'a AppHandle, event: SystemTrayEvent) {
             "copy_disable" => on_auto_copy_click(app, "disable"),
             "ocr_recognize" => on_ocr_recognize_click(),
             "ocr_translate" => on_ocr_translate_click(),
+            "qr_recognize" => on_qr_recognize_click(),
             "config" => on_config_click(),
             "view_log" => on_view_log_click(app),
             "restart" => on_restart_click(app),
@@ -162,6 +164,9 @@ fn on_ocr_recognize_click() {
 fn on_ocr_translate_click() {
     ocr_translate();
 }
+fn on_qr_recognize_click() {
+    qr_recognize();
+}
 
 fn on_config_click() {
     config_window();
@@ -195,6 +200,7 @@ struct TrayLabels {
     copy_disable: &'static str,
     ocr_recognize: &'static str,
     ocr_translate: &'static str,
+    qr_recognize: &'static str,
     config: &'static str,
     view_log: &'static str,
     restart: &'static str,
@@ -211,6 +217,7 @@ const TRAY_LABELS_EN: TrayLabels = TrayLabels {
     copy_disable: "Disable",
     ocr_recognize: "OCR Recognize",
     ocr_translate: "OCR Translate",
+    qr_recognize: "Scan QR Code",
     config: "Config",
     view_log: "View Log",
     restart: "Restart",
@@ -227,6 +234,7 @@ const TRAY_LABELS_ZH_CN: TrayLabels = TrayLabels {
     copy_disable: "关闭",
     ocr_recognize: "文字识别",
     ocr_translate: "截图翻译",
+    qr_recognize: "识别二维码",
     config: "偏好设置",
     view_log: "查看日志",
     restart: "重启应用",
@@ -266,6 +274,7 @@ fn tray_menu(labels: &TrayLabels) -> tauri::SystemTrayMenu {
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("ocr_recognize", labels.ocr_recognize))
         .add_item(CustomMenuItem::new("ocr_translate", labels.ocr_translate))
+        .add_item(CustomMenuItem::new("qr_recognize", labels.qr_recognize))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("config", labels.config))
         .add_item(CustomMenuItem::new("view_log", labels.view_log))

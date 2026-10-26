@@ -49,6 +49,7 @@ export default function Hotkey() {
     const [inputTranslate, setInputTranslate] = useConfig('hotkey_input_translate', '');
     const [ocrRecognize, setOcrRecognize] = useConfig('hotkey_ocr_recognize', '');
     const [ocrTranslate, setOcrTranslate] = useConfig('hotkey_ocr_translate', '');
+    const [qrRecognize, setQrRecognize] = useConfig('hotkey_qr_recognize', '');
 
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
@@ -232,6 +233,37 @@ export default function Hotkey() {
                                     className={`${ocrTranslate === '' && 'hidden'}`}
                                     onPress={() => {
                                         registerHandler('hotkey_ocr_translate', ocrTranslate);
+                                    }}
+                                >
+                                    {t('common.ok')}
+                                </Button>
+                            }
+                        />
+                    )}
+                </div>
+                <div className='config-item'>
+                    <h3 className='my-auto'>{t('config.hotkey.qr_recognize')}</h3>
+                    {qrRecognize !== null && (
+                        <Input
+                            type='hotkey'
+                            variant='bordered'
+                            value={qrRecognize}
+                            label={t('config.hotkey.set_hotkey')}
+                            className='max-w-[50%]'
+                            onKeyDown={(e) => {
+                                keyDown(e, setQrRecognize);
+                            }}
+                            onFocus={() => {
+                                unregister(qrRecognize);
+                                setQrRecognize('');
+                            }}
+                            endContent={
+                                <Button
+                                    size='sm'
+                                    variant='flat'
+                                    className={`${qrRecognize === '' && 'hidden'}`}
+                                    onPress={() => {
+                                        registerHandler('hotkey_qr_recognize', qrRecognize);
                                     }}
                                 >
                                     {t('common.ok')}
