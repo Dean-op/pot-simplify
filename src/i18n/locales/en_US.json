@@ -237,6 +237,8 @@
         },
         "translate": {
             "translate": "Translate",
+            "markdown_preview": "Show Markdown preview",
+            "markdown_source": "View Markdown source",
             "copy": "Copy",
             "speak": "Speak",
             "retry": "Try again",

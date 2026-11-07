@@ -27,6 +27,7 @@
 -   **截图二维码**：框选二维码，在本地解码 `http://` / `https://` 链接，复制网址并调用默认浏览器打开。
 -   **剪贴板监听**：可选择监听剪贴板变化，复制新文本后自动翻译。
 -   **多服务结果并列**：翻译窗口可同时展示多个服务的结果，并可拖动调整顺序。
+-   **Markdown 预览**：译文支持标题、粗体、列表、引用、代码块和表格；点击译文底部的源码按钮切换预览与源码，复制仍保留 Markdown 格式。
 -   **自动复制**：可设置翻译完成后自动复制原文、译文或两者。
 -   **托盘常驻**：关闭窗口不会退出程序，可从托盘重新打开配置、翻译、OCR 或二维码识别。
 -   **多显示器适配**：窗口会定位到鼠标所在显示器，并处理 DPI 缩放和屏幕边缘溢出。
@@ -118,7 +119,7 @@ OpenAI 兼容服务支持流式输出、自定义 Prompt、请求参数、拉取
 ### 环境要求
 
 -   Windows 10 / 11
--   Node.js 18 或更高版本（仓库 `.node-version` 为 21）
+-   Node.js 18 或更高版本（推荐使用仓库 `.node-version` 指定的 22）
 -   pnpm 9 或更高版本
 -   Rust 1.85.1 或更高版本
 -   Visual Studio MSVC C++ 构建工具链
@@ -143,6 +144,9 @@ pnpm dev
 ### 检查与测试
 
 ```powershell
+# Markdown 渲染、安全边界和流式翻译回归测试
+pnpm test
+
 # 前端生产构建
 pnpm build
 
@@ -150,9 +154,9 @@ pnpm build
 cargo check --manifest-path src-tauri/Cargo.toml
 
 # Rust 单元测试（包含二维码解码与 URL 校验）
-cargo test --manifest-path src-tauri/Cargo.toml
+cargo test --manifest-path src-tauri/Cargo.toml --locked
 
-# 安装锁定依赖、构建前端并检查 Rust
+# 安装锁定依赖、运行前端/Rust 测试并构建前端
 .\.scripts\verify.ps1
 
 # 额外执行 NSIS 打包
@@ -170,6 +174,8 @@ NSIS 安装包输出到：
 ```text
 src-tauri/target/release/bundle/nsis/
 ```
+
+发布版本时同步更新 `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` 和 `CHANGELOG.md`，然后提交并创建 `vX.Y.Z` 标签。GitHub Actions 会校验版本一致性，先执行测试，再构建 x64、x86、ARM64 的普通版与内置 WebView2 版；全部六个安装包构建成功后才创建 Release。
 
 ## 常见问题
 
@@ -196,6 +202,10 @@ src-tauri/target/release/bundle/nsis/
 ### 二维码识别不到
 
 框选范围要包含二维码本体和四周留白，避免截断、强反光或过度模糊。当前只接受 `http://` 和 `https://` 网址；纯文本、`mailto:` 等其他二维码内容会提示“不是网址”。
+
+### Markdown 译文格式不正确
+
+译文默认显示 Markdown 预览，底部的源码按钮可查看原始结果。翻译 Markdown 时请关闭“翻译设置 → 自动删除换行”，并使用能保留格式的翻译服务。OpenAI 兼容服务会在请求中附加保留 Markdown 结构、代码和链接地址的规则，但模型仍可能输出无效语法。预览不执行 HTML、不加载图片；链接只支持 HTTP/HTTPS。
 
 ## 已知边界
 

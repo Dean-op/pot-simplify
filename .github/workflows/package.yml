@@ -10,7 +10,26 @@ permissions:
     contents: write
 
 jobs:
+    verify:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+            - uses: dtolnay/rust-toolchain@stable
+            - name: Install Dependencies
+              run: pnpm install --frozen-lockfile
+            - name: Test Frontend
+              run: pnpm test
+            - name: Test Rust
+              run: cargo test --manifest-path src-tauri/Cargo.toml --locked
+
     change-version:
+        needs: verify
         runs-on: ubuntu-latest
         outputs:
             version: ${{ steps.outputstep.outputs.VERSION }}
@@ -36,13 +55,19 @@ jobs:
                       exit 1
                   fi
                   echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
-            - name: Change Version for Windows
+            - name: Validate Version
               env:
                   VERSION: ${{ steps.outputstep.outputs.VERSION }}
               run: |
-                  sed -i "s/\"version\":.*/\"version\": \"$VERSION\",/" package.json
-                  sed -i "s/\"version\":.*/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
-                  sed -i "s/version = \"0.0.0\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').package.version")
+                  CARGO_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -n 1)
+                  for ACTUAL in "$PACKAGE_VERSION" "$TAURI_VERSION" "$CARGO_VERSION"; do
+                      if [[ "$ACTUAL" != "$VERSION" ]]; then
+                          echo "::error::版本号不一致：期望 $VERSION，实际 $ACTUAL"
+                          exit 1
+                      fi
+                  done
 
             - name: Upload Artifacts for Windows
               uses: actions/upload-artifact@v4
@@ -77,7 +102,7 @@ jobs:
             - name: Setup Nodejs
               uses: actions/setup-node@v4
               with:
-                  node-version: 21
+                  node-version: 22
             - name: Install Rust Stable
               uses: dtolnay/rust-toolchain@stable
             - name: install dependencies
@@ -89,9 +114,7 @@ jobs:
               with:
                   version: 9
             - name: Install Dependencies
-              run: pnpm install
-            - name: Code Format
-              run: pnpm prettier --write .
+              run: pnpm install --frozen-lockfile
             - name: Build and Package
               run: pnpm tauri build -b nsis --target ${{ matrix.target }}
             - name: Upload Artifacts
@@ -100,13 +123,6 @@ jobs:
                   name: windows_${{ matrix.target }}
                   path: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
                   if-no-files-found: error
-            - name: Upload Release
-              if: startsWith(github.ref, 'refs/tags')
-              uses: softprops/action-gh-release@v1
-              with:
-                  generate_release_notes: true
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  files: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
 
     build-for-windows-fix-runtime:
         needs: change-version
@@ -136,7 +152,7 @@ jobs:
             - name: Setup Nodejs
               uses: actions/setup-node@v4
               with:
-                  node-version: 21
+                  node-version: 22
             - name: Install Rust Stable
               uses: dtolnay/rust-toolchain@stable
             - name: install dependencies
@@ -148,9 +164,7 @@ jobs:
               with:
                   version: 9
             - name: Install Dependencies
-              run: pnpm install
-            - name: Code Format
-              run: pnpm prettier --write .
+              run: pnpm install --frozen-lockfile
             - name: Download WebView2 Runtime
               run: |
                   invoke-webrequest -uri https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.${{ matrix.arch }}.cab -outfile Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.${{ matrix.arch }}.cab
@@ -172,10 +186,32 @@ jobs:
                   name: windows_fix_webview_runtime_${{ matrix.target }}
                   path: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
                   if-no-files-found: error
-            - name: Upload Release
-              if: startsWith(github.ref, 'refs/tags')
-              uses: softprops/action-gh-release@v1
+
+    publish:
+        if: startsWith(github.ref, 'refs/tags/')
+        needs: [build-for-windows, build-for-windows-fix-runtime]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/download-artifact@v4
               with:
-                  generate_release_notes: true
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  files: src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*setup*
+                  pattern: windows_*
+                  path: installers
+                  merge-multiple: true
+            - name: Prepare Release Notes
+              run: |
+                  VERSION="${GITHUB_REF_NAME#v}"
+                  awk -v header="## [$VERSION]" '
+                      index($0, header) == 1 { capture = 1; next }
+                      capture && /^## / { exit }
+                      capture { print }
+                  ' CHANGELOG.md > release-notes.md
+                  test -s release-notes.md
+                  COUNT=$(find installers -name '*-setup.exe' -type f | wc -l)
+                  test "$COUNT" -eq 6
+            - name: Publish Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  body_path: release-notes.md
+                  fail_on_unmatched_files: true
+                  files: installers/*-setup.exe

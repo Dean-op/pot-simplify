@@ -39,6 +39,18 @@ export async function translate(text, from, to, options) {
         };
     });
 
+    // Apply formatting rules to existing instances without replacing saved custom prompts.
+    const markdownInstruction =
+        'Preserve Markdown structure and line breaks, including headings, emphasis, lists, tables and blockquotes. ' +
+        'Translate only prose; keep code, inline code, URLs and link destinations unchanged. ' +
+        'Do not wrap the entire translation in a Markdown code fence or add explanations.';
+    const systemIndex = promptList.findIndex((item) => item.role === 'system');
+    if (systemIndex >= 0) {
+        promptList[systemIndex].content += '\n\n' + markdownInstruction;
+    } else {
+        promptList.unshift({ role: 'system', content: markdownInstruction });
+    }
+
     const headers =
         service === 'openai'
             ? {
@@ -69,52 +81,46 @@ export async function translate(text, from, to, options) {
         });
         if (res.ok) {
             let target = '';
+            const handleLine = (line) => {
+                if (!line.startsWith('data:')) return;
+                const payload = line.slice(5).trim();
+                if (!payload || payload === '[DONE]') return;
+                let chunk;
+                try {
+                    chunk = JSON.parse(payload);
+                } catch {
+                    return;
+                }
+                const content = chunk.choices?.[0]?.delta?.content;
+                if (typeof content === 'string' && content !== '') {
+                    target += content;
+                    setResult?.(target);
+                }
+            };
             const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
             try {
-                let temp = '';
+                // Keep partial SSE lines and UTF-8 characters until the next network chunk.
                 while (true) {
                     const { done, value } = await reader.read();
-                    if (done) {
-                        setResult(target.trim());
-                        return target.trim();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() ?? '';
+                    for (const line of lines) {
+                        handleLine(line);
                     }
-                    const str = new TextDecoder().decode(value);
-                    let datas = str.split('data:');
-                    for (let data of datas) {
-                        if (data.trim() !== '' && data.trim() !== '[DONE]') {
-                            try {
-                                if (temp !== '') {
-                                    data = temp + data.trim();
-                                    let result = JSON.parse(data.trim());
-                                    if (result.choices[0].delta.content) {
-                                        target += result.choices[0].delta.content;
-                                        if (setResult) {
-                                            setResult(target + '_');
-                                        } else {
-                                            return '[STREAM]';
-                                        }
-                                    }
-                                    temp = '';
-                                } else {
-                                    let result = JSON.parse(data.trim());
-                                    if (result.choices[0].delta.content) {
-                                        target += result.choices[0].delta.content;
-                                        if (setResult) {
-                                            setResult(target + '_');
-                                        } else {
-                                            return '[STREAM]';
-                                        }
-                                    }
-                                }
-                            } catch {
-                                temp = data.trim();
-                            }
-                        }
-                    }
+                }
+                buffer += decoder.decode();
+                for (const line of buffer.split('\n')) {
+                    handleLine(line);
                 }
             } finally {
                 reader.releaseLock();
             }
+            setResult?.(target.trim());
+            return target.trim();
         } else {
             throw `Http Request Error\n${formatApiError(res.status, await res.json().catch(() => null))}`;
         }

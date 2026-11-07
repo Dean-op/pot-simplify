@@ -53,8 +53,9 @@ Step '环境版本' 'node -v && pnpm -v && rustc -V && cargo -V' $root | Out-Nul
 
 $fail = 0
 $fail += Step 'pnpm install' 'pnpm install --frozen-lockfile' $root
+$fail += Step 'pnpm test' 'pnpm test' $root
 $fail += Step 'pnpm build' 'pnpm build' $root
-$fail += Step 'cargo check' 'cargo check' (Join-Path $root 'src-tauri')
+$fail += Step 'cargo test' 'cargo test --locked' (Join-Path $root 'src-tauri')
 
 if ($Full) {
     $fail += Step 'tauri build' 'pnpm tauri build' $root
@@ -64,3 +65,4 @@ Log ""
 Log "=============================================================="
 if ($fail -eq 0) { Log "全部通过" } else { Log "有步骤失败，往上翻看退出码非 0 的段落" }
 Log "完整日志: $log"
+if ($fail -ne 0) { exit 1 }

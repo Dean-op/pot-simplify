@@ -1,0 +1,138 @@
+.translation-markdown,
+.translation-source {
+    min-width: 0;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+
+.translation-source {
+    font: inherit;
+    white-space: pre-wrap;
+}
+
+.translation-markdown > :first-child {
+    margin-top: 0;
+}
+
+.translation-markdown > :last-child {
+    margin-bottom: 0;
+}
+
+.translation-markdown p,
+.translation-markdown ul,
+.translation-markdown ol,
+.translation-markdown blockquote,
+.translation-markdown pre,
+.translation-table {
+    margin: 0.75em 0;
+}
+
+.translation-markdown p {
+    white-space: pre-wrap;
+}
+
+.translation-markdown :is(h1, h2, h3, h4, h5, h6) {
+    margin: 1em 0 0.5em;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.translation-markdown h1 {
+    font-size: 1.5em;
+}
+
+.translation-markdown h2 {
+    font-size: 1.3em;
+}
+
+.translation-markdown h3 {
+    font-size: 1.15em;
+}
+
+.translation-markdown ul,
+.translation-markdown ol {
+    padding-left: 1.5em;
+}
+
+.translation-markdown ul {
+    list-style: disc;
+}
+
+.translation-markdown ol {
+    list-style: decimal;
+}
+
+.translation-markdown li > :is(ul, ol) {
+    margin: 0.25em 0;
+}
+
+.translation-markdown blockquote {
+    border-left: 3px solid hsl(var(--nextui-default-400));
+    padding-left: 1em;
+    color: hsl(var(--nextui-default-600));
+}
+
+.translation-markdown a {
+    color: hsl(var(--nextui-primary));
+    text-decoration: underline;
+}
+
+.translation-markdown a:focus-visible {
+    outline: 2px solid hsl(var(--nextui-primary));
+    outline-offset: 2px;
+}
+
+.translation-markdown code {
+    font-family: Consolas, 'Courier New', monospace;
+    background: hsl(var(--nextui-content2));
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
+
+.translation-markdown pre {
+    overflow-x: auto;
+    padding: 0.75em;
+    border-radius: 6px;
+    background: hsl(var(--nextui-content2));
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+.translation-markdown pre code {
+    padding: 0;
+    background: transparent;
+}
+
+.translation-table {
+    overflow-x: auto;
+}
+
+.translation-markdown table {
+    border-collapse: collapse;
+}
+
+.translation-markdown th,
+.translation-markdown td {
+    border: 1px solid hsl(var(--nextui-default-300));
+    padding: 0.35em 0.65em;
+    min-width: 5em;
+}
+
+.translation-markdown th {
+    background: hsl(var(--nextui-content2));
+}
+
+.translation-markdown hr {
+    margin: 1em 0;
+    border-color: hsl(var(--nextui-default-300));
+}
+
+.translation-markdown .contains-task-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.translation-markdown .task-list-item input {
+    margin-right: 0.5em;
+}

@@ -13,14 +13,15 @@ import {
 } from '@nextui-org/react';
 import { BiCollapseVertical, BiExpandVertical } from 'react-icons/bi';
 import { sendNotification } from '@tauri-apps/api/notification';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { writeText } from '@tauri-apps/api/clipboard';
+import { open } from '@tauri-apps/api/shell';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { TbTransformFilled } from 'react-icons/tb';
 import { HiOutlineVolumeUp } from 'react-icons/hi';
 import { semanticColors } from '@nextui-org/theme';
 import toast, { Toaster } from 'react-hot-toast';
-import { MdContentCopy } from 'react-icons/md';
+import { MdContentCopy, MdCode, MdPreview } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { GiCycle } from 'react-icons/gi';
 import { useTheme } from 'next-themes';
@@ -28,6 +29,7 @@ import { useAtomValue } from 'jotai';
 import { nanoid } from 'nanoid';
 import { useSpring, animated } from '@react-spring/web';
 import useMeasure from 'react-use-measure';
+import MarkdownText from '../../../../components/MarkdownText';
 
 import { sourceLanguageAtom, targetLanguageAtom } from '../LanguageArea';
 import { useConfig, useToastStyle, useVoice, useSpeech } from '../../../../hooks';
@@ -54,6 +56,7 @@ export default function TargetArea(props) {
     const [hide, setHide] = useState(true);
 
     const [result, setResult] = useState('');
+    const [showSource, setShowSource] = useState(false);
     const [error, setError] = useState('');
 
     const sourceText = useAtomValue(sourceTextAtom);
@@ -65,7 +68,6 @@ export default function TargetArea(props) {
 
     const detectLanguage = useAtomValue(detectLanguageAtom);
     const { t } = useTranslation();
-    const textAreaRef = useRef();
     const toastStyle = useToastStyle();
     const speak = useVoice();
     const speakText = useSpeech();
@@ -81,6 +83,7 @@ export default function TargetArea(props) {
     useEffect(() => {
         setResult('');
         setError('');
+        setShowSource(false);
         if (
             sourceText.trim() !== '' &&
             sourceLanguage &&
@@ -197,16 +200,6 @@ export default function TargetArea(props) {
         }
     };
 
-    // hide empty textarea
-    useEffect(() => {
-        if (textAreaRef.current !== null) {
-            textAreaRef.current.style.height = '0px';
-            if (result !== '') {
-                textAreaRef.current.style.height = textAreaRef.current.scrollHeight + 'px';
-            }
-        }
-    }, [result]);
-
     const [boundRef, bounds] = useMeasure({ scroll: true });
     const springs = useSpring({
         from: { height: 0 },
@@ -311,12 +304,15 @@ export default function TargetArea(props) {
                     {/* result content */}
                     <CardBody className={`p-[12px] pb-0 ${hide && 'h-0 p-0'}`}>
                         {typeof result === 'string' ? (
-                            <textarea
-                                ref={textAreaRef}
-                                className={`text-[${appFontSize}px] h-0 resize-none bg-transparent select-text outline-none`}
-                                readOnly
-                                value={result}
-                            />
+                            <div style={{ fontSize: `${appFontSize}px` }}>
+                                <MarkdownText
+                                    text={result}
+                                    showSource={showSource}
+                                    onOpenLink={(url) => {
+                                        open(url).catch((e) => toast.error(String(e), { style: toastStyle }));
+                                    }}
+                                />
+                            </div>
                         ) : (
                             <div>
                                 {result['pronunciations'] &&
@@ -446,6 +442,28 @@ export default function TargetArea(props) {
                         className={`bg-content1 rounded-none rounded-b-[10px] flex px-[12px] p-[5px] ${hide && 'hidden'}`}
                     >
                         <ButtonGroup>
+                            {typeof result === 'string' && result !== '' && (
+                                <Tooltip
+                                    content={t(showSource ? 'translate.markdown_preview' : 'translate.markdown_source')}
+                                >
+                                    <Button
+                                        isIconOnly
+                                        variant='light'
+                                        size='sm'
+                                        aria-label={t(
+                                            showSource ? 'translate.markdown_preview' : 'translate.markdown_source'
+                                        )}
+                                        aria-pressed={showSource}
+                                        onPress={() => setShowSource(!showSource)}
+                                    >
+                                        {showSource ? (
+                                            <MdPreview className='text-[16px]' />
+                                        ) : (
+                                            <MdCode className='text-[16px]' />
+                                        )}
+                                    </Button>
+                                </Tooltip>
+                            )}
                             {/* copy button */}
                             <Tooltip content={t('translate.copy')}>
                                 <Button
