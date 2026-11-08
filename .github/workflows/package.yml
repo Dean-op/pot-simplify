@@ -29,6 +29,7 @@ jobs:
               run: cargo test --manifest-path src-tauri/Cargo.toml --locked
 
     change-version:
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         needs: verify
         runs-on: ubuntu-latest
         outputs:
@@ -39,7 +40,7 @@ jobs:
               with:
                   fetch-depth: 0
 
-            # tag 触发时以 tag 为准；普通 master 构建以 package.json 为准。
+            # tag 触发时以 tag 为准；手动构建以 package.json 为准。
             # 不能用 git describe 推断：在已发布版本的提交上打新 tag 时，
             # describe 可能仍返回旧 tag，导致安装包版本号错误。
             - id: outputstep
@@ -59,15 +60,7 @@ jobs:
               env:
                   VERSION: ${{ steps.outputstep.outputs.VERSION }}
               run: |
-                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
-                  TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').package.version")
-                  CARGO_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -n 1)
-                  for ACTUAL in "$PACKAGE_VERSION" "$TAURI_VERSION" "$CARGO_VERSION"; do
-                      if [[ "$ACTUAL" != "$VERSION" ]]; then
-                          echo "::error::版本号不一致：期望 $VERSION，实际 $ACTUAL"
-                          exit 1
-                      fi
-                  done
+                  node .scripts/check-version.mjs "$VERSION"
 
             - name: Upload Artifacts for Windows
               uses: actions/upload-artifact@v4
