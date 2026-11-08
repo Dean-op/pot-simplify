@@ -12,7 +12,7 @@ before(async () => {
     server = await createServer({
         configFile: false,
         cacheDir: 'node_modules/.vite-markdown-tests',
-        server: { middlewareMode: true },
+        server: { middlewareMode: true, watch: null },
         appType: 'custom',
         plugins: [
             {

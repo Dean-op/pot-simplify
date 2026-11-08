@@ -5,6 +5,7 @@ import { Card, Divider } from '@nextui-org/react';
 import { useTranslation } from 'react-i18next';
 
 import WindowControl from '../../components/WindowControl';
+import WindowCloseGuard from '../../components/WindowControl/CloseGuard';
 import SideBar from './components/SideBar';
 import { useConfig } from '../../hooks';
 import routes from './routes';
@@ -23,7 +24,7 @@ export default function Config() {
     }, []);
 
     return (
-        <>
+        <WindowCloseGuard>
             <Card
                 shadow='none'
                 className={`${
@@ -65,6 +66,6 @@ export default function Config() {
                 <Divider />
                 <div className='p-[10px] overflow-y-auto h-[calc(100vh-36px)]'>{page}</div>
             </div>
-        </>
+        </WindowCloseGuard>
     );
 }

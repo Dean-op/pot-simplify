@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function useServiceSave({ onTest, onSave, onSuccess, onError }) {
-    const [isLoading, setIsLoading] = useState(false);
+export function useServiceSave({ onTest, onSave, onSuccess, onError, onPhaseChange }) {
+    const [phase, setPhaseState] = useState('idle');
     const active = useRef(true);
     const busy = useRef(false);
 
@@ -15,20 +15,25 @@ export function useServiceSave({ onTest, onSave, onSuccess, onError }) {
     const submit = async () => {
         if (busy.current || !active.current) return;
         busy.current = true;
-        setIsLoading(true);
+        const setPhase = (value) => {
+            setPhaseState(value);
+            onPhaseChange?.(value);
+        };
+        setPhase(onTest ? 'testing' : 'saving');
         try {
             await onTest?.();
             // Closing/cancelling a dialog during the network test discards its draft.
             if (!active.current) return;
+            setPhase('saving');
             await onSave();
             if (active.current) onSuccess?.();
         } catch (error) {
             if (active.current) onError(error);
         } finally {
             busy.current = false;
-            if (active.current) setIsLoading(false);
+            if (active.current) setPhase('idle');
         }
     };
 
-    return [isLoading, submit];
+    return [phase !== 'idle', submit, phase];
 }

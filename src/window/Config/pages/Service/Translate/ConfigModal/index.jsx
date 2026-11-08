@@ -1,60 +1,21 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Spacer } from '@nextui-org/react';
-import { useTranslation } from 'react-i18next';
 import React from 'react';
-
+import { useTranslation } from 'react-i18next';
 import * as builtinServices from '../../../../../../services/translate';
 import { getServiceName } from '../../../../../../utils/service_instance';
+import ServiceConfigModal from '../../../../../../components/ServiceConfigModal';
 
-export default function ConfigModal(props) {
-    const { serviceInstanceKey, isOpen, onOpenChange, updateServiceInstanceList } = props;
-
-    const serviceName = getServiceName(serviceInstanceKey);
-
+export default function ConfigModal({ serviceInstanceKey, isOpen, onOpenChange, updateServiceInstanceList }) {
     const { t } = useTranslation();
-    const ConfigComponent = builtinServices[serviceName].Config;
-
+    const serviceName = getServiceName(serviceInstanceKey);
     return (
-        <Modal
+        <ServiceConfigModal
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            scrollBehavior='inside'
-            size='2xl'
-        >
-            <ModalContent className='max-h-[75vh]'>
-                {(onClose) => (
-                    <>
-                        <ModalHeader>
-                            <img
-                                src={builtinServices[serviceName].info.icon}
-                                className='h-[24px] w-[24px] my-auto'
-                                draggable={false}
-                            />
-                            <Spacer x={2} />
-                            {t(`services.translate.${serviceName}.title`)}
-                        </ModalHeader>
-                        <ModalBody>
-                            {isOpen && (
-                                <ConfigComponent
-                                    key={serviceInstanceKey}
-                                    name={serviceName}
-                                    instanceKey={serviceInstanceKey}
-                                    updateServiceList={updateServiceInstanceList}
-                                    onClose={onClose}
-                                />
-                            )}
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button
-                                color='danger'
-                                variant='light'
-                                onPress={onClose}
-                            >
-                                {t('common.cancel')}
-                            </Button>
-                        </ModalFooter>
-                    </>
-                )}
-            </ModalContent>
-        </Modal>
+            instanceKey={serviceInstanceKey}
+            ConfigComponent={builtinServices[serviceName].Config}
+            updateServiceList={updateServiceInstanceList}
+            title={t('services.translate.' + serviceName + '.title')}
+            icon={builtinServices[serviceName].info.icon}
+        />
     );
 }

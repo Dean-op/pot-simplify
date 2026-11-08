@@ -45,7 +45,7 @@ export default function App() {
                 if (e.key.startsWith('F') && e.key.length > 1) {
                     e.preventDefault();
                 }
-                if (e.key === 'Escape') {
+                if (e.key === 'Escape' && !e.defaultPrevented && !document.querySelector('[role="dialog"]')) {
                     await appWindow.close();
                 }
             });
@@ -58,7 +58,7 @@ export default function App() {
                 if (e.key.startsWith('F') && e.key.length > 1) {
                     e.preventDefault();
                 }
-                if (e.key === 'Escape') {
+                if (e.key === 'Escape' && !e.defaultPrevented && !document.querySelector('[role="dialog"]')) {
                     await appWindow.close();
                 }
             });

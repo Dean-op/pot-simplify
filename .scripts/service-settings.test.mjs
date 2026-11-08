@@ -25,7 +25,7 @@ before(async () => {
         configFile: false,
         cacheDir: 'node_modules/.vite-service-tests',
         // SSR tests share the process runner, but do not need a listening HMR socket.
-        server: { middlewareMode: true, hmr: { server: createHttpServer() } },
+        server: { middlewareMode: true, watch: null, hmr: { server: createHttpServer() } },
         appType: 'custom',
         ssr: { noExternal: ['@tauri-apps/api'] },
         optimizeDeps: { noDiscovery: true },
@@ -266,6 +266,57 @@ test('only a still-mounted form runs its close callback after persistence comple
     await act(async () => renderer.unmount());
     pending.resolve();
     await act(async () => submission);
+    assert.equal(closes, 1);
+});
+
+test('saving has a distinct locked phase after the cancellable network test', async () => {
+    const validation = deferred();
+    const persistence = deferred();
+    const phases = [];
+    function Probe() {
+        value = useServiceSave({
+            onTest: () => validation.promise,
+            onSave: () => persistence.promise,
+            onPhaseChange: (phase) => phases.push(phase),
+            onError: (error) => {
+                throw error;
+            },
+        });
+        return null;
+    }
+    await act(async () => {
+        renderer = create(React.createElement(Probe));
+    });
+    let submission;
+    await act(async () => {
+        submission = value[1]();
+    });
+    assert.deepEqual(phases, ['testing']);
+    validation.resolve();
+    await act(async () => Promise.resolve());
+    assert.deepEqual(phases, ['testing', 'saving']);
+    assert.equal(value[0], true);
+    persistence.resolve();
+    await act(async () => submission);
+    assert.deepEqual(phases, ['testing', 'saving', 'idle']);
+});
+
+test('the dialog rejects every close path while configuration is being persisted', async () => {
+    const { useServiceDialog } = await server.ssrLoadModule('/src/hooks/useServiceDialog.js');
+    let closes = 0;
+    function Probe() {
+        value = useServiceDialog(() => closes++);
+        return null;
+    }
+    await act(async () => {
+        renderer = create(React.createElement(Probe));
+    });
+    await act(async () => value.setSaving(true));
+    value.requestClose();
+    value.requestClose(() => closes++);
+    assert.equal(closes, 0);
+    await act(async () => value.setSaving(false));
+    value.requestClose();
     assert.equal(closes, 1);
 });
 

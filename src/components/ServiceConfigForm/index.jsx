@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Button } from '@nextui-org/react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useToastStyle } from '../../hooks/useToastStyle';
 import { useServiceSave } from '../../hooks/useServiceSave';
+import { ServiceDialogContext } from '../../hooks/useServiceDialog';
 
 export default function ServiceConfigForm({
     config,
@@ -16,13 +17,17 @@ export default function ServiceConfigForm({
 }) {
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
-    const [isLoading, submit] = useServiceSave({
-        onTest: () => onTest?.(config),
+    const dialog = useContext(ServiceDialogContext);
+    const setSaving = dialog?.setSaving;
+    useEffect(() => () => setSaving?.(false), [setSaving]);
+    const [isLoading, submit, phase] = useServiceSave({
+        onTest: onTest ? () => onTest(config) : undefined,
         onSave: async () => {
             await setConfig(config, true);
             await updateServiceList(instanceKey);
         },
         onSuccess: onClose,
+        onPhaseChange: (value) => setSaving?.(value === 'saving'),
         onError: (error) => toast.error(t('config.service.save_failed') + String(error), { style: toastStyle }),
     });
 
@@ -44,7 +49,7 @@ export default function ServiceConfigForm({
                     color='primary'
                     fullWidth
                 >
-                    {t('common.save')}
+                    {t(phase === 'idle' ? 'common.save' : `config.service.${phase}`)}
                 </Button>
             </fieldset>
         </form>

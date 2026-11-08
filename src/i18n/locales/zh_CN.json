@@ -149,6 +149,8 @@
                 "add_builtin_service": "添加内置服务",
                 "add_service": "添加服务",
                 "save_failed": "保存失败（验证或写入配置）：",
+                "testing": "正在测试…",
+                "saving": "正在保存…",
                 "test_failed": "测试失败",
                 "homepage": "插件主页"
             }
