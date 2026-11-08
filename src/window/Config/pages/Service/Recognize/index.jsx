@@ -9,6 +9,8 @@ import { useConfig, deleteKey } from '../../../../../hooks';
 import ServiceItem from './ServiceItem';
 import SelectModal from './SelectModal';
 import ConfigModal from './ConfigModal';
+import ConfirmationDialog from '../../../../../components/ConfirmationDialog';
+import { useServiceSave } from '../../../../../hooks/useServiceSave';
 
 export default function Recognize() {
     const { isOpen: isSelectOpen, onOpen: onSelectOpen, onOpenChange: onSelectOpenChange } = useDisclosure();
@@ -22,6 +24,20 @@ export default function Recognize() {
 
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [isDeleting, confirmDelete] = useServiceSave({
+        onSave: async () => {
+            const list = getRecognizeServiceInstanceList();
+            if (list.includes(deleteTarget.key) && list.length === 1) throw new Error(t('config.service.least'));
+            await setRecognizeServiceInstanceList(
+                list.filter((key) => key !== deleteTarget.key),
+                true
+            );
+            await deleteKey(deleteTarget.key);
+        },
+        onSuccess: () => setDeleteTarget(null),
+        onError: (error) => toast.error(t('config.service.save_failed') + String(error), { style: toastStyle }),
+    });
 
     const reorder = (list, startIndex, endIndex) => {
         const result = Array.from(list);
@@ -35,20 +51,12 @@ export default function Recognize() {
         setRecognizeServiceInstanceList(items);
     };
 
-    const deleteServiceInstance = async (instanceKey) => {
+    const deleteServiceInstance = (instanceKey, name) => {
         if (recognizeServiceInstanceList.length === 1) {
             toast.error(t('config.service.least'), { style: toastStyle });
             return;
         }
-        try {
-            await setRecognizeServiceInstanceList(
-                recognizeServiceInstanceList.filter((x) => x !== instanceKey),
-                true
-            );
-            await deleteKey(instanceKey);
-        } catch (error) {
-            toast.error(t('config.service.save_failed') + String(error), { style: toastStyle });
-        }
+        setDeleteTarget({ key: instanceKey, name });
     };
     const updateServiceInstanceList = async (instanceKey) => {
         const list = getRecognizeServiceInstanceList();
@@ -59,6 +67,15 @@ export default function Recognize() {
     return (
         <>
             <Toaster />
+            <ConfirmationDialog
+                isOpen={deleteTarget !== null}
+                title={t('config.service.delete_title')}
+                message={t('config.service.delete_description', { name: deleteTarget?.name })}
+                confirmText={t('config.service.delete')}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteTarget(null)}
+                isLoading={isDeleting}
+            />
             <Card className='h-[calc(100vh-120px)] overflow-y-auto p-5 flex justify-between'>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable

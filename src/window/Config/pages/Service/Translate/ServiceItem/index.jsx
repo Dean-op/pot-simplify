@@ -19,6 +19,9 @@ export default function ServiceItem(props) {
     const [serviceInstanceConfig, setServiceInstanceConfig] = useConfig(serviceInstanceKey, {});
 
     const serviceName = getServiceName(serviceInstanceKey);
+    const displayName = getDisplayInstanceName(serviceInstanceConfig?.[INSTANCE_NAME_CONFIG_KEY], () =>
+        t(`services.translate.${serviceName}.title`)
+    );
 
     return (
         serviceInstanceConfig !== null && (
@@ -38,14 +41,11 @@ export default function ServiceItem(props) {
                         draggable={false}
                     />
                     <Spacer x={2} />
-                    <h2 className='my-auto'>
-                        {getDisplayInstanceName(serviceInstanceConfig[INSTANCE_NAME_CONFIG_KEY], () =>
-                            t(`services.translate.${serviceName}.title`)
-                        )}
-                    </h2>
+                    <h2 className='my-auto'>{displayName}</h2>
                 </div>
                 <div className='flex'>
                     <Switch
+                        aria-label={`${t('config.service.enable')}: ${displayName}`}
                         size='sm'
                         isSelected={serviceInstanceConfig['enable'] ?? true}
                         onValueChange={(v) => {
@@ -56,6 +56,7 @@ export default function ServiceItem(props) {
                         isIconOnly
                         size='sm'
                         variant='light'
+                        aria-label={`${t('config.service.edit')}: ${displayName}`}
                         onPress={() => {
                             setCurrentConfigKey(serviceInstanceKey);
                             onConfigOpen();
@@ -69,8 +70,9 @@ export default function ServiceItem(props) {
                         size='sm'
                         variant='light'
                         color='danger'
+                        aria-label={`${t('config.service.delete')}: ${displayName}`}
                         onPress={() => {
-                            deleteServiceInstance(serviceInstanceKey);
+                            deleteServiceInstance(serviceInstanceKey, displayName);
                         }}
                     >
                         <MdDeleteOutline className='text-2xl' />

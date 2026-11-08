@@ -151,6 +151,15 @@
                 "save_failed": "保存失败（验证或写入配置）：",
                 "testing": "正在测试…",
                 "saving": "正在保存…",
+                "discard_title": "放弃未保存的修改？",
+                "discard_description": "当前修改尚未保存，确定放弃并关闭吗？",
+                "discard": "放弃修改",
+                "keep_editing": "继续编辑",
+                "delete_title": "删除服务？",
+                "delete_description": "确定删除“{{name}}”及其保存的配置吗？此操作无法撤销。",
+                "delete": "删除",
+                "edit": "编辑",
+                "enable": "启用",
                 "test_failed": "测试失败",
                 "homepage": "插件主页"
             }

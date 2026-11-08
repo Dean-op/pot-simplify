@@ -320,6 +320,71 @@ test('the dialog rejects every close path while configuration is being persisted
     assert.equal(closes, 1);
 });
 
+test('dirty drafts require confirmation and cancelling the prompt preserves the draft', async () => {
+    const { useServiceDialog } = await server.ssrLoadModule('/src/hooks/useServiceDialog.js');
+    let closes = 0;
+    function Probe() {
+        value = useServiceDialog(() => closes++);
+        return null;
+    }
+    await act(async () => {
+        renderer = create(React.createElement(Probe));
+    });
+    await act(async () => value.setDirty(true));
+    await act(async () => value.requestClose());
+    assert.equal(closes, 0);
+    assert.equal(value.confirmOpen, true);
+    await act(async () => value.cancelDiscard());
+    assert.equal(value.confirmOpen, false);
+    assert.equal(value.isDirty, true);
+    await act(async () => value.requestClose());
+    await act(async () => value.discardChanges());
+    await act(async () => value.discardChanges());
+    assert.equal(closes, 1);
+});
+
+test('a close prompt cancels validation and its late response cannot save or reset a newer test', async () => {
+    const { useServiceDialog } = await server.ssrLoadModule('/src/hooks/useServiceDialog.js');
+    const old = deferred();
+    const latest = deferred();
+    let attempts = 0;
+    let commits = 0;
+    function Probe() {
+        const dialog = useServiceDialog(() => {});
+        const save = useServiceSave({
+            onTest: () => (++attempts === 1 ? old.promise : latest.promise),
+            onSave: () => commits++,
+            onError: (error) => {
+                throw error;
+            },
+        });
+        React.useEffect(() => dialog.registerCancelTest(save[3]), [dialog.registerCancelTest, save[3]]);
+        value = { dialog, save };
+        return null;
+    }
+    await act(async () => {
+        renderer = create(React.createElement(Probe));
+    });
+    await act(async () => value.dialog.setDirty(true));
+    let first;
+    await act(async () => {
+        first = value.save[1]();
+    });
+    await act(async () => value.dialog.requestClose());
+    await act(async () => value.dialog.cancelDiscard());
+    let second;
+    await act(async () => {
+        second = value.save[1]();
+    });
+    old.resolve();
+    await act(async () => first);
+    assert.equal(commits, 0);
+    assert.equal(value.save[0], true);
+    latest.resolve();
+    await act(async () => second);
+    assert.equal(commits, 1);
+});
+
 test('deleting a service cancels its pending enable-switch write', async () => {
     env.data.set('openai@deleted', { enable: true });
     await mount('openai@deleted', {}, { sync: true });

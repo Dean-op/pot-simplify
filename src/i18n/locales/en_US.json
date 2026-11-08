@@ -151,6 +151,15 @@
                 "save_failed": "Unable to validate or save configuration: ",
                 "testing": "Testing...",
                 "saving": "Saving...",
+                "discard_title": "Discard unsaved changes?",
+                "discard_description": "Your changes have not been saved. Discard them and close?",
+                "discard": "Discard Changes",
+                "keep_editing": "Keep Editing",
+                "delete_title": "Delete service?",
+                "delete_description": "Delete {{name}} and its stored configuration? This cannot be undone.",
+                "delete": "Delete",
+                "edit": "Edit",
+                "enable": "Enable",
                 "test_failed": "Test Failed",
                 "homepage": "Homepage"
             }

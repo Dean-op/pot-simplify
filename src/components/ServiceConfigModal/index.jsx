@@ -3,6 +3,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Space
 import { useTranslation } from 'react-i18next';
 import { ServiceDialogContext, useServiceDialog } from '../../hooks/useServiceDialog';
 import { WindowCloseContext } from '../WindowControl/CloseGuard';
+import ConfirmationDialog from '../ConfirmationDialog';
 
 export default function ServiceConfigModal({
     isOpen,
@@ -67,6 +68,15 @@ export default function ServiceConfigModal({
                     </ModalFooter>
                 </ModalContent>
             </Modal>
+            <ConfirmationDialog
+                isOpen={isOpen && dialog.confirmOpen}
+                title={t('config.service.discard_title')}
+                message={t('config.service.discard_description')}
+                confirmText={t('config.service.discard')}
+                cancelText={t('config.service.keep_editing')}
+                onConfirm={dialog.discardChanges}
+                onCancel={dialog.cancelDiscard}
+            />
         </ServiceDialogContext.Provider>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Button } from '@nextui-org/react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -19,8 +19,15 @@ export default function ServiceConfigForm({
     const toastStyle = useToastStyle();
     const dialog = useContext(ServiceDialogContext);
     const setSaving = dialog?.setSaving;
+    const setDirty = dialog?.setDirty;
+    const registerCancelTest = dialog?.registerCancelTest;
+    const original = useRef(JSON.stringify(config));
+    useEffect(() => {
+        setDirty?.(JSON.stringify(config) !== original.current);
+    }, [config, setDirty]);
+    useEffect(() => () => setDirty?.(false), [setDirty]);
     useEffect(() => () => setSaving?.(false), [setSaving]);
-    const [isLoading, submit, phase] = useServiceSave({
+    const [isLoading, submit, phase, cancelTest] = useServiceSave({
         onTest: onTest ? () => onTest(config) : undefined,
         onSave: async () => {
             await setConfig(config, true);
@@ -30,6 +37,7 @@ export default function ServiceConfigForm({
         onPhaseChange: (value) => setSaving?.(value === 'saving'),
         onError: (error) => toast.error(t('config.service.save_failed') + String(error), { style: toastStyle }),
     });
+    useEffect(() => registerCancelTest?.(cancelTest), [registerCancelTest, cancelTest]);
 
     return (
         <form

@@ -16,6 +16,8 @@ export default function ServiceItem(props) {
     const [serviceInstanceConfig] = useConfig(serviceInstanceKey, {});
 
     const serviceName = getServiceName(serviceInstanceKey);
+    const displayName =
+        serviceInstanceConfig?.[INSTANCE_NAME_CONFIG_KEY] || t(`services.recognize.${serviceName}.title`);
 
     return (
         serviceInstanceConfig !== null && (
@@ -35,16 +37,14 @@ export default function ServiceItem(props) {
                         draggable={false}
                     />
                     <Spacer x={2} />
-                    <h2 className='my-auto'>
-                        {serviceInstanceConfig[INSTANCE_NAME_CONFIG_KEY] ||
-                            t(`services.recognize.${serviceName}.title`)}
-                    </h2>
+                    <h2 className='my-auto'>{displayName}</h2>
                 </div>
                 <div className='flex'>
                     <Button
                         isIconOnly
                         size='sm'
                         variant='light'
+                        aria-label={`${t('config.service.edit')}: ${displayName}`}
                         onPress={() => {
                             setCurrentConfigKey(serviceInstanceKey);
                             onConfigOpen();
@@ -58,8 +58,9 @@ export default function ServiceItem(props) {
                         size='sm'
                         variant='light'
                         color='danger'
+                        aria-label={`${t('config.service.delete')}: ${displayName}`}
                         onPress={() => {
-                            deleteServiceInstance(serviceInstanceKey);
+                            deleteServiceInstance(serviceInstanceKey, displayName);
                         }}
                     >
                         <MdDeleteOutline className='text-2xl' />
