@@ -1,12 +1,11 @@
 import { INSTANCE_NAME_CONFIG_KEY } from '../../../utils/service_instance';
 import { Input, Button } from '@nextui-org/react';
-import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { open } from '@tauri-apps/api/shell';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useConfig } from '../../../hooks/useConfig';
-import { useToastStyle } from '../../../hooks';
+import ServiceConfigForm from '../../../components/ServiceConfigForm';
 import { translate } from './index';
 import { Language } from './index';
 
@@ -22,31 +21,17 @@ export function Config(props) {
         },
         { sync: false }
     );
-    const [isLoading, setIsLoading] = useState(false);
-
-    const toastStyle = useToastStyle();
 
     return (
         config !== null && (
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsLoading(true);
-                    translate('hello', Language.auto, Language.zh_cn, { config }).then(
-                        () => {
-                            setIsLoading(false);
-                            setConfig(config, true);
-                            updateServiceList(instanceKey);
-                            onClose();
-                        },
-                        (e) => {
-                            setIsLoading(false);
-                            toast.error(t('config.service.test_failed') + e.toString(), { style: toastStyle });
-                        }
-                    );
-                }}
+            <ServiceConfigForm
+                config={config}
+                setConfig={setConfig}
+                instanceKey={instanceKey}
+                updateServiceList={updateServiceList}
+                onClose={onClose}
+                onTest={(draft) => translate('hello', Language.auto, Language.zh_cn, { config: draft })}
             >
-                <Toaster />
                 <div className='config-item'>
                     <Input
                         label={t('services.instance_name')}
@@ -79,9 +64,7 @@ export function Config(props) {
                         {t('services.translate.baidu.apply_free_key')}
                     </Button>
                 </div>
-                <div className='my-2 px-1 text-xs text-default-500'>
-                    {t('services.translate.baidu.description')}
-                </div>
+                <div className='my-2 px-1 text-xs text-default-500'>{t('services.translate.baidu.description')}</div>
                 <div className='config-item'>
                     <Input
                         label={t('services.translate.baidu.appid')}
@@ -121,15 +104,7 @@ export function Config(props) {
                         }}
                     />
                 </div>
-                <Button
-                    type='submit'
-                    isLoading={isLoading}
-                    color='primary'
-                    fullWidth
-                >
-                    {t('common.save')}
-                </Button>
-            </form>
+            </ServiceConfigForm>
         )
     );
 }

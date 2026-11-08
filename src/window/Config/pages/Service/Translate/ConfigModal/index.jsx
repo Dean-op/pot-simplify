@@ -18,6 +18,7 @@ export default function ConfigModal(props) {
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             scrollBehavior='inside'
+            size='2xl'
         >
             <ModalContent className='max-h-[75vh]'>
                 {(onClose) => (
@@ -32,12 +33,15 @@ export default function ConfigModal(props) {
                             {t(`services.translate.${serviceName}.title`)}
                         </ModalHeader>
                         <ModalBody>
-                            <ConfigComponent
-                                name={serviceName}
-                                instanceKey={serviceInstanceKey}
-                                updateServiceList={updateServiceInstanceList}
-                                onClose={onClose}
-                            />
+                            {isOpen && (
+                                <ConfigComponent
+                                    key={serviceInstanceKey}
+                                    name={serviceName}
+                                    instanceKey={serviceInstanceKey}
+                                    updateServiceList={updateServiceInstanceList}
+                                    onClose={onClose}
+                                />
+                            )}
                         </ModalBody>
                         <ModalFooter>
                             <Button

@@ -15,9 +15,10 @@ export default function Recognize() {
     const { isOpen: isConfigOpen, onOpen: onConfigOpen, onOpenChange: onConfigOpenChange } = useDisclosure();
     const [currentConfigKey, setCurrentConfigKey] = useState('system');
     // now it's service instance list
-    const [recognizeServiceInstanceList, setRecognizeServiceInstanceList] = useConfig('recognize_service_list', [
-        'system',
-    ]);
+    const [recognizeServiceInstanceList, setRecognizeServiceInstanceList, getRecognizeServiceInstanceList] = useConfig(
+        'recognize_service_list',
+        ['system']
+    );
 
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
@@ -34,22 +35,25 @@ export default function Recognize() {
         setRecognizeServiceInstanceList(items);
     };
 
-    const deleteServiceInstance = (instanceKey) => {
+    const deleteServiceInstance = async (instanceKey) => {
         if (recognizeServiceInstanceList.length === 1) {
             toast.error(t('config.service.least'), { style: toastStyle });
             return;
-        } else {
-            setRecognizeServiceInstanceList(recognizeServiceInstanceList.filter((x) => x !== instanceKey));
-            deleteKey(instanceKey);
+        }
+        try {
+            await setRecognizeServiceInstanceList(
+                recognizeServiceInstanceList.filter((x) => x !== instanceKey),
+                true
+            );
+            await deleteKey(instanceKey);
+        } catch (error) {
+            toast.error(t('config.service.save_failed') + String(error), { style: toastStyle });
         }
     };
-    const updateServiceInstanceList = (instanceKey) => {
-        if (recognizeServiceInstanceList.includes(instanceKey)) {
-            return;
-        } else {
-            const newList = [...recognizeServiceInstanceList, instanceKey];
-            setRecognizeServiceInstanceList(newList);
-        }
+    const updateServiceInstanceList = async (instanceKey) => {
+        const list = getRecognizeServiceInstanceList();
+        const newList = list.includes(instanceKey) ? [...list] : [...list, instanceKey];
+        await setRecognizeServiceInstanceList(newList, true);
     };
 
     return (
@@ -96,6 +100,7 @@ export default function Recognize() {
                                             </Draggable>
                                         );
                                     })}
+                                {provided.placeholder}
                             </div>
                         )}
                     </Droppable>

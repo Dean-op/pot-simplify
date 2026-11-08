@@ -15,11 +15,10 @@ export default function Translate() {
     const { isOpen: isConfigOpen, onOpen: onConfigOpen, onOpenChange: onConfigOpenChange } = useDisclosure();
     const [currentConfigKey, setCurrentConfigKey] = useState('google');
     // now it's service instance list
-    const [translateServiceInstanceList, setTranslateServiceInstanceList] = useConfig('translate_service_list', [
-        'youdao',
-        'google',
-        'ecdict',
-    ]);
+    const [translateServiceInstanceList, setTranslateServiceInstanceList, getTranslateServiceInstanceList] = useConfig(
+        'translate_service_list',
+        ['youdao', 'google', 'ecdict']
+    );
 
     const { t } = useTranslation();
     const toastStyle = useToastStyle();
@@ -36,22 +35,26 @@ export default function Translate() {
         setTranslateServiceInstanceList(items);
     };
 
-    const deleteServiceInstance = (instanceKey) => {
+    const deleteServiceInstance = async (instanceKey) => {
         if (translateServiceInstanceList.length === 1) {
             toast.error(t('config.service.least'), { style: toastStyle });
             return;
-        } else {
-            setTranslateServiceInstanceList(translateServiceInstanceList.filter((x) => x !== instanceKey));
-            deleteKey(instanceKey);
+        }
+        try {
+            await setTranslateServiceInstanceList(
+                translateServiceInstanceList.filter((x) => x !== instanceKey),
+                true
+            );
+            await deleteKey(instanceKey);
+        } catch (error) {
+            toast.error(t('config.service.save_failed') + String(error), { style: toastStyle });
         }
     };
-    const updateServiceInstanceList = (instanceKey) => {
-        if (translateServiceInstanceList.includes(instanceKey)) {
-            return;
-        } else {
-            const newList = [...translateServiceInstanceList, instanceKey];
-            setTranslateServiceInstanceList(newList);
-        }
+    const updateServiceInstanceList = async (instanceKey) => {
+        // Notify open translation windows even when only an existing instance changed.
+        const list = getTranslateServiceInstanceList();
+        const newList = list.includes(instanceKey) ? [...list] : [...list, instanceKey];
+        await setTranslateServiceInstanceList(newList, true);
     };
 
     return (
@@ -98,6 +101,7 @@ export default function Translate() {
                                             </Draggable>
                                         );
                                     })}
+                                {provided.placeholder}
                             </div>
                         )}
                     </Droppable>

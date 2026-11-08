@@ -3,14 +3,16 @@ import { DropdownTrigger } from '@nextui-org/react';
 import { MdDeleteOutline } from 'react-icons/md';
 import { DropdownMenu } from '@nextui-org/react';
 import { DropdownItem } from '@nextui-org/react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Dropdown } from '@nextui-org/react';
 import { open } from '@tauri-apps/api/shell';
-import React, { useState } from 'react';
+import React from 'react';
 
-import { PROVIDER_PRESETS, fetchModelList } from '../../../utils/llm_provider';
+import { PROVIDER_PRESETS } from '../../../utils/llm_provider';
 import { useConfig } from '../../../hooks/useConfig';
+import ServiceConfigForm from '../../../components/ServiceConfigForm';
+import { useModelList } from '../../../hooks/useModelList';
 import { useToastStyle } from '../../../hooks';
 import { translate } from './index';
 import { Language } from './index';
@@ -49,77 +51,25 @@ export function Config(props) {
         },
         { sync: false }
     );
-    // 兼容旧版本
-    if (openaiConfig) {
-        if (openaiConfig.promptList === undefined) {
-            setOpenaiConfig({
-                ...openaiConfig,
-                promptList: [
-                    {
-                        role: 'system',
-                        content:
-                            'You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it.',
-                    },
-                    { role: 'user', content: `Translate into $to:\n"""\n$text\n"""` },
-                ],
-            });
-        }
-        if (openaiConfig.requestArguments === undefined) {
-            setOpenaiConfig({
-                ...openaiConfig,
-                requestArguments: defaultRequestArguments,
-            });
-        }
-        if (openaiConfig.thinkingMode === undefined) {
-            setOpenaiConfig({
-                ...openaiConfig,
-                thinkingMode: 'off',
-            });
-        }
-    }
-
-    const [isLoading, setIsLoading] = useState(false);
-    const [modelList, setModelList] = useState([]);
-    const [isFetchingModels, setIsFetchingModels] = useState(false);
 
     const toastStyle = useToastStyle();
 
-    const loadModelList = () => {
-        setIsFetchingModels(true);
-        fetchModelList(openaiConfig['requestPath'], openaiConfig['apiKey']).then(
-            (list) => {
-                setIsFetchingModels(false);
-                setModelList(list);
-                toast.success(t('services.model_list_loaded', { count: list.length }), { style: toastStyle });
-            },
-            (e) => {
-                setIsFetchingModels(false);
-                toast.error(t('services.model_list_failed') + e.toString(), { style: toastStyle });
-            }
-        );
-    };
+    const [modelList, isFetchingModels, loadModelList] = useModelList(openaiConfig?.requestPath, openaiConfig?.apiKey, {
+        onLoaded: (list) =>
+            toast.success(t('services.model_list_loaded', { count: list.length }), { style: toastStyle }),
+        onError: (error) => toast.error(t('services.model_list_failed') + String(error), { style: toastStyle }),
+    });
 
     return (
         openaiConfig !== null && (
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsLoading(true);
-                    translate('hello', Language.auto, Language.zh_cn, { config: openaiConfig }).then(
-                        () => {
-                            setIsLoading(false);
-                            setOpenaiConfig(openaiConfig, true);
-                            updateServiceList(instanceKey);
-                            onClose();
-                        },
-                        (e) => {
-                            setIsLoading(false);
-                            toast.error(t('config.service.test_failed') + e.toString(), { style: toastStyle });
-                        }
-                    );
-                }}
+            <ServiceConfigForm
+                config={openaiConfig}
+                setConfig={setOpenaiConfig}
+                instanceKey={instanceKey}
+                updateServiceList={updateServiceList}
+                onClose={onClose}
+                onTest={(draft) => translate('hello', Language.auto, Language.zh_cn, { config: draft })}
             >
-                <Toaster />
                 <div className='config-item'>
                     <Input
                         label={t('services.instance_name')}
@@ -160,7 +110,6 @@ export function Config(props) {
                             onAction={(key) => {
                                 const preset = PROVIDER_PRESETS.find((item) => item.key === key);
                                 if (!preset) return;
-                                setModelList([]);
                                 setOpenaiConfig({
                                     ...openaiConfig,
                                     service: 'openai',
@@ -328,7 +277,10 @@ export function Config(props) {
                     {openaiConfig.promptList &&
                         openaiConfig.promptList.map((prompt, index) => {
                             return (
-                                <div className='config-item'>
+                                <div
+                                    key={index}
+                                    className='config-item'
+                                >
                                     <Textarea
                                         label={prompt.role}
                                         labelPlacement='outside'
@@ -340,17 +292,7 @@ export function Config(props) {
                                                 ...openaiConfig,
                                                 promptList: openaiConfig.promptList.map((p, i) => {
                                                     if (i === index) {
-                                                        if (i === 0) {
-                                                            return {
-                                                                role: 'system',
-                                                                content: value,
-                                                            };
-                                                        } else {
-                                                            return {
-                                                                role: index % 2 !== 0 ? 'user' : 'assistant',
-                                                                content: value,
-                                                            };
-                                                        }
+                                                        return { ...p, content: value };
                                                     } else {
                                                         return p;
                                                     }
@@ -417,15 +359,7 @@ export function Config(props) {
                     />
                 </div>
                 <br />
-                <Button
-                    type='submit'
-                    isLoading={isLoading}
-                    fullWidth
-                    color='primary'
-                >
-                    {t('common.save')}
-                </Button>
-            </form>
+            </ServiceConfigForm>
         )
     );
 }

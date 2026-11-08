@@ -1,8 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { listen, emit } from '@tauri-apps/api/event';
 import { useGetState } from './useGetState';
 import { store } from '../utils/store';
-import { debounce } from '../utils';
 
 // 同一个 key 被多个组件 useConfig 是常态：app_font_size 在 App 和每一个
 // TargetArea 里都有，而 TargetArea 按翻译服务数量渲染多份。原来每个 hook
@@ -39,71 +38,133 @@ function subscribe(key, callback) {
 // 免得后挂载的组件读到过期值。
 const pendingReads = new Map();
 
-function readConfig(key, defaultValue) {
+async function readConfig(key, defaultValue, sync) {
+    if (!sync) {
+        const stored = await store.get(key);
+        return structuredClone({
+            ...defaultValue,
+            ...Object.fromEntries(Object.entries(stored ?? {}).filter(([, value]) => value !== undefined)),
+        });
+    }
     let pending = pendingReads.get(key);
     if (!pending) {
         pending = store.get(key).then((v) => {
             if (v === null) {
-                store.set(key, defaultValue);
-                store.save();
-                return defaultValue;
+                return store
+                    .set(key, defaultValue)
+                    .then(() => store.save())
+                    .then(() => defaultValue);
             }
             return v;
         });
         pendingReads.set(key, pending);
-        pending.finally(() => {
+        const cleanup = () => {
             if (pendingReads.get(key) === pending) {
                 pendingReads.delete(key);
             }
-        });
+        };
+        pending.then(cleanup, cleanup);
     }
     return pending;
+}
+
+const pendingWrites = new Map();
+const activeWrites = new Map();
+
+function cancelPendingWrite(key) {
+    clearTimeout(pendingWrites.get(key));
+    pendingWrites.delete(key);
+}
+
+function queueWrite(key, operation) {
+    const pending = (activeWrites.get(key) ?? Promise.resolve()).catch(() => {}).then(operation);
+    activeWrites.set(key, pending);
+    const cleanup = () => {
+        if (activeWrites.get(key) === pending) activeWrites.delete(key);
+    };
+    pending.then(cleanup, cleanup);
+    return pending;
+}
+
+function writeConfig(key, value) {
+    cancelPendingWrite(key);
+    return queueWrite(key, async () => {
+        const previous = await store.get(key);
+        try {
+            await store.set(key, value);
+            await store.save();
+        } catch (error) {
+            // Store mutates its in-memory cache before saving; undo a failed write.
+            try {
+                if (previous === null) await store.delete(key);
+                else await store.set(key, previous);
+            } catch (rollbackError) {
+                console.error('Failed to restore configuration', rollbackError);
+            }
+            throw error;
+        }
+        const eventKey = key.replaceAll('.', '_').replaceAll('@', ':');
+        await emit(`${eventKey}_changed`, value);
+    });
 }
 
 export const useConfig = (key, defaultValue, options = {}) => {
     const [property, setPropertyState, getProperty] = useGetState(null);
     const { sync = true } = options;
+    const defaults = useRef(defaultValue);
+    defaults.current = defaultValue;
 
-    // 同步到Store (State -> Store)
-    const syncToStore = useCallback(
-        debounce((v) => {
-            store.set(key, v);
-            store.save();
-            let eventKey = key.replaceAll('.', '_').replaceAll('@', ':');
-            emit(`${eventKey}_changed`, v);
-        }),
-        []
-    );
-
-    // 同步到State (Store -> State)
-    const syncToState = useCallback((v) => {
-        if (v !== null) {
+    const setProperty = useCallback(
+        (v, forceSync = false) => {
+            // Explicit saves must finish before the service list or modal is updated.
+            if (forceSync) return writeConfig(key, v).then(() => setPropertyState(v));
             setPropertyState(v);
-        } else {
-            readConfig(key, defaultValue).then((r) => {
-                setPropertyState(r);
-            });
-        }
-    }, []);
-
-    const setProperty = useCallback((v, forceSync = false) => {
-        setPropertyState(v);
-        const isSync = forceSync || sync;
-        isSync && syncToStore(v);
-    }, []);
+            if (sync) {
+                cancelPendingWrite(key);
+                pendingWrites.set(
+                    key,
+                    setTimeout(() => {
+                        writeConfig(key, v).catch((error) => console.error('Failed to save configuration', error));
+                    }, 500)
+                );
+            }
+        },
+        [key, sync]
+    );
 
     // 初始化
     useEffect(() => {
-        syncToState(null);
-        return subscribe(key, syncToState);
-    }, []);
+        let active = true;
+        setPropertyState(null);
+        readConfig(key, defaults.current, sync)
+            .then((r) => {
+                if (active) setPropertyState(r);
+            })
+            .catch((error) => console.error('Failed to read configuration', error));
+        // Draft forms do not subscribe: an enable toggle must not discard unsaved edits.
+        const unsubscribe = sync ? subscribe(key, setPropertyState) : null;
+        return () => {
+            active = false;
+            unsubscribe?.();
+        };
+    }, [key, sync]);
 
     return [property, setProperty, getProperty];
 };
 
-export const deleteKey = (key) => {
-    if (store.has(key)) {
-        store.delete(key);
-        store.save();
-    }
+export const deleteKey = async (key) => {
+    cancelPendingWrite(key);
+    // Wait for writes already in flight, not just the debounce timer.
+    await queueWrite(key, async () => {
+        if (await store.has(key)) {
+            const previous = await store.get(key);
+            await store.delete(key);
+            try {
+                await store.save();
+            } catch (error) {
+                await store.set(key, previous);
+                throw error;
+            }
+        }
+    });
 };

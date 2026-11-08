@@ -1,12 +1,14 @@
 import { INSTANCE_NAME_CONFIG_KEY } from '../../../utils/service_instance';
 import { Input, Button, Switch, Textarea, Select, SelectItem } from '@nextui-org/react';
 import { DropdownTrigger, DropdownMenu, DropdownItem, Dropdown } from '@nextui-org/react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import React, { useState } from 'react';
+import React from 'react';
 
-import { PROVIDER_PRESETS, fetchModelList } from '../../../utils/llm_provider';
+import { PROVIDER_PRESETS } from '../../../utils/llm_provider';
 import { useConfig } from '../../../hooks/useConfig';
+import ServiceConfigForm from '../../../components/ServiceConfigForm';
+import { useModelList } from '../../../hooks/useModelList';
 import { useToastStyle } from '../../../hooks';
 import { recognize } from './index';
 import { Language } from './index';
@@ -47,60 +49,25 @@ export function Config(props) {
         },
         { sync: false }
     );
-    // 兼容旧版本：这几个字段是后加的，老实例里读出来是 undefined
-    if (config) {
-        if (config.stream === undefined) {
-            setConfig({ ...config, stream: true });
-        }
-        if (config.thinkingMode === undefined) {
-            setConfig({ ...config, thinkingMode: 'off' });
-        }
-        if (config.maxImageEdge === undefined) {
-            setConfig({ ...config, maxImageEdge: 2048 });
-        }
-    }
-    const [isLoading, setIsLoading] = useState(false);
-    const [modelList, setModelList] = useState([]);
-    const [isFetchingModels, setIsFetchingModels] = useState(false);
 
     const toastStyle = useToastStyle();
 
-    const loadModelList = () => {
-        setIsFetchingModels(true);
-        fetchModelList(config['requestPath'], config['apiKey']).then(
-            (list) => {
-                setIsFetchingModels(false);
-                setModelList(list);
-                toast.success(t('services.model_list_loaded', { count: list.length }), { style: toastStyle });
-            },
-            (e) => {
-                setIsFetchingModels(false);
-                toast.error(t('services.model_list_failed') + e.toString(), { style: toastStyle });
-            }
-        );
-    };
+    const [modelList, isFetchingModels, loadModelList] = useModelList(config?.requestPath, config?.apiKey, {
+        onLoaded: (list) =>
+            toast.success(t('services.model_list_loaded', { count: list.length }), { style: toastStyle }),
+        onError: (error) => toast.error(t('services.model_list_failed') + String(error), { style: toastStyle }),
+    });
 
     return (
         config !== null && (
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsLoading(true);
-                    recognize(TEST_IMAGE_BASE64, Language.auto, { config }).then(
-                        () => {
-                            setIsLoading(false);
-                            setConfig(config, true);
-                            updateServiceList(instanceKey);
-                            onClose();
-                        },
-                        (e) => {
-                            setIsLoading(false);
-                            toast.error(t('config.service.test_failed') + e.toString(), { style: toastStyle });
-                        }
-                    );
-                }}
+            <ServiceConfigForm
+                config={config}
+                setConfig={setConfig}
+                instanceKey={instanceKey}
+                updateServiceList={updateServiceList}
+                onClose={onClose}
+                onTest={(draft) => recognize(TEST_IMAGE_BASE64, Language.auto, { config: draft })}
             >
-                <Toaster />
                 <div className='config-item'>
                     <Input
                         label={t('services.instance_name')}
@@ -128,7 +95,6 @@ export function Config(props) {
                             onAction={(key) => {
                                 const preset = PROVIDER_PRESETS.find((item) => item.key === key);
                                 if (!preset) return;
-                                setModelList([]);
                                 setConfig({ ...config, requestPath: preset.base });
                             }}
                         >
@@ -298,15 +264,7 @@ export function Config(props) {
                     />
                 </div>
                 <br />
-                <Button
-                    type='submit'
-                    isLoading={isLoading}
-                    color='primary'
-                    fullWidth
-                >
-                    {t('common.save')}
-                </Button>
-            </form>
+            </ServiceConfigForm>
         )
     );
 }
