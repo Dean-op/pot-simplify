@@ -1,227 +1,246 @@
-<img width="120px" src="public/icon.svg" align="left" alt="pot-simplify logo" />
-
 # pot-simplify
 
-面向 Windows 的桌面翻译、截图 OCR 与二维码识别工具。常驻系统托盘，用快捷键完成划词翻译、截图取字和扫码打开链接，不必在多个网页之间来回切换。
+<img src="public/icon.svg" width="80" height="80" alt="pot-simplify 图标" />
 
-本项目 Fork 自 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7，保留日常翻译与识别链路，移除了插件系统、本地 HTTP 服务和自动更新等非核心模块，只发布 Windows NSIS 安装包。
+pot-simplify 是一个 Windows 桌面翻译与识别工具：选中文字就能翻译，框选屏幕就能提取文字、翻译图片，或读取二维码网址，不必反复切换到网页。它基于 [Pot](https://github.com/pot-app/pot-desktop) 精简，移除了服务插件系统、本地 HTTP 服务和自动更新，围绕日常翻译与识别保留功能，并加入 Markdown 译文预览。
+
+-   **快捷翻译**：支持划词、输入和截图翻译，多个服务的结果可以并列展示、拖动排序。
+-   **Markdown**：译文支持标题、列表、引用、代码块和表格；可切换源码，复制时仍保留原始 Markdown。
+-   **两种 OCR**：使用 Windows 本机 OCR，或接入支持图片输入的 OpenAI 兼容视觉模型。
+-   **本地扫码**：截图框选二维码，在本机解码 HTTP/HTTPS 网址，复制链接并打开默认浏览器。
+-   **模型接入**：内置阿里百炼、硅基流动和 OpenAI 地址预设，支持自定义端点、模型列表、Prompt 和流式输出。
+-   **Windows**：发布 x64、x86、ARM64 安装包，每种架构提供普通版和内置固定 WebView2 运行时版。
+
+## 使用示例
+
+先设置对应热键，就能完成这些操作：
+
+```text
+文档中的句子 → 选中文字 → 划词翻译热键 → 查看译文
+图片中的文字 → 文字识别热键 → 框选区域 → 复制识别结果
+屏幕上的外文 → 截图翻译热键 → 框选区域 → 查看译文
+屏幕上的二维码 → 识别二维码热键 → 框选完整二维码 → 复制网址并打开浏览器
+```
+
+> **扫码成功后会自动打开网址。** 请只扫描可信来源的二维码；非 HTTP/HTTPS 内容不会被当作链接打开。
+
+[下载最新版](https://github.com/Dean-op/pot-simplify/releases/latest) · [查看更新记录](CHANGELOG.md) · [反馈问题](https://github.com/Dean-op/pot-simplify/issues)
 
 ## 目录
 
--   [核心功能](#核心功能)
--   [支持的服务](#支持的服务)
--   [快速开始](#快速开始)
--   [热键与托盘](#热键与托盘)
--   [隐私与数据](#隐私与数据)
--   [开发与构建](#开发与构建)
+-   [安装与首次使用](#安装与首次使用)
+-   [翻译与识别服务](#翻译与识别服务)
+-   [使用边界与隐私](#使用边界与隐私)
+-   [开发与验证](#开发与验证)
+-   [版本与发布](#版本与发布)
 -   [常见问题](#常见问题)
--   [已知边界](#已知边界)
--   [许可证与致谢](#许可证与致谢)
+-   [上游与许可证](#上游与许可证)
 
-## 核心功能
+---
 
--   **划词翻译**：选中任意窗口中的文字后按快捷键，应用读取选区并弹出翻译窗口。
--   **输入翻译**：呼出空白翻译卡片，直接输入文本翻译。
--   **截图 OCR**：框选屏幕区域，用 Windows 系统 OCR 或视觉模型提取文字。
--   **截图翻译**：框选文字区域后先识别、再翻译。
--   **截图二维码**：框选二维码，在本地解码 `http://` / `https://` 链接，复制网址并调用默认浏览器打开。
--   **剪贴板监听**：可选择监听剪贴板变化，复制新文本后自动翻译。
--   **多服务结果并列**：翻译窗口可同时展示多个服务的结果，并可拖动调整顺序。
--   **Markdown 预览**：译文支持标题、粗体、列表、引用、代码块和表格；点击译文底部的源码按钮切换预览与源码，复制仍保留 Markdown 格式。
--   **自动复制**：可设置翻译完成后自动复制原文、译文或两者。
--   **托盘常驻**：关闭窗口不会退出程序，可从托盘重新打开配置、翻译、OCR 或二维码识别。
--   **多显示器适配**：窗口会定位到鼠标所在显示器，并处理 DPI 缩放和屏幕边缘溢出。
--   **中英文界面**：设置页包含常规、翻译、文字识别、热键和服务五项。
+## 安装与首次使用
 
-## 支持的服务
+### 1. 选择安装包
+
+打开 [Releases](https://github.com/Dean-op/pot-simplify/releases/latest)，在 **Assets** 中下载与你的 Windows 架构对应的 `setup.exe`。
+
+| 架构    | 适用设备               |
+| ------- | ---------------------- |
+| `x64`   | 64 位 Intel / AMD 电脑 |
+| `arm64` | ARM64 Windows 设备     |
+| `x86`   | 32 位 Windows 设备     |
+
+**优先选择普通版。** 普通版使用系统 WebView2；如果没有安装，安装器通过内置引导程序联网安装运行时。已有运行时的电脑不需要下载完整的内置运行时包。
+
+文件名包含 `_fix_webview2_runtime-setup.exe` 的版本自带固定 WebView2，适合无法在线安装运行时的环境。当前仓库使用的固定版本为 `109.0.1518.78`，并非最新浏览器内核；可以正常使用系统运行时的环境建议选择普通版。
+
+> 从上游 Pot 迁移时，先退出旧应用并备份配置，再卸载旧版、安装本分支。两者共用配置标识，历史配置可以继续读取，但上游已被移除的服务插件不能在本分支使用。
+
+### 2. 完成首次配置
+
+1. 安装并启动 `pot-simplify`。首次运行会打开设置窗口；之后可从系统托盘打开 **偏好设置**。
+2. 在 **常规** 中选择界面语言。默认界面为英文，可切换为中文。
+3. 在 **热键** 中为需要的动作设置快捷键，并点击对应的保存按钮。**所有全局热键默认留空，不会自动生效。**
+4. 在 **服务** 中选择翻译与识别服务。未配置时，翻译列表默认为有道、Google 和 ECDict，OCR 默认为系统 OCR。
+5. 使用系统 OCR 时，在 Windows 中安装目标语言的 OCR 功能；使用视觉模型 OCR 时，添加对应服务并填写端点、API Key 和模型。
+6. 按需在 **翻译**、**文字识别** 中设置目标语言、自动复制、窗口关闭行为等选项。
+
+无需使用大模型时，可以先使用免密钥翻译通道与系统 OCR。免密钥不等于离线，在线服务的可用性仍取决于网络和服务商。
+
+### 3. 开始使用
+
+| 动作       | 操作与结果                                   |
+| ---------- | -------------------------------------------- |
+| 划词翻译   | 选中文字，按热键打开翻译窗口                 |
+| 输入翻译   | 按热键或使用托盘菜单，输入文本后翻译         |
+| 文字识别   | 按热键或使用托盘菜单，拖动框选屏幕区域后识别 |
+| 截图翻译   | 框选屏幕文字，先 OCR，再将结果送入翻译窗口   |
+| 识别二维码 | 框选完整二维码，识别到网址后复制并打开浏览器 |
+
+右键托盘图标还可以切换剪贴板监听、自动复制模式，打开设置与日志，或退出程序。**关闭窗口不会退出应用**；结束后台运行请使用托盘菜单的“退出”。
+
+## 翻译与识别服务
 
 ### 翻译
 
-| 服务           | 配置方式                             | 说明                                                 |
-| -------------- | ------------------------------------ | ---------------------------------------------------- |
-| 有道翻译       | 免配置，或填写有道智云 AppKey / 密钥 | 未填写密钥时使用免配置通道；填写后走有道智云 OpenAPI |
-| 百度翻译       | 填写 App ID / 密钥                   | 调用百度翻译开放平台                                 |
-| Google 翻译    | 免配置，可填写自定义 URL             | 内置多个入口轮换，降低单入口限流的影响               |
-| OpenAI 兼容    | 请求地址、API Key、模型              | 支持阿里百炼、硅基流动、OpenAI 预设和自定义端点      |
-| 必应词典       | 免配置                               | 查询单词音标、释义、词形和例句                       |
-| ECDict（在线） | 免配置                               | 通过在线词典接口查询中英文词条                       |
-| 剑桥词典       | 免配置                               | 查询英文单词的英中释义                               |
-
-OpenAI 兼容服务支持流式输出、自定义 Prompt、请求参数、拉取模型列表，以及针对部分推理模型关闭思考模式。
+| 服务           | 需要配置                                 | 适合的用途                           |
+| -------------- | ---------------------------------------- | ------------------------------------ |
+| 有道翻译       | 可免密钥；也可填写有道智云 AppKey / 密钥 | 日常翻译，配置凭据后使用官方 OpenAPI |
+| 百度翻译       | App ID / 密钥                            | 使用百度翻译开放平台                 |
+| Google 翻译    | 可免密钥；支持自定义请求地址             | 日常翻译，需能访问对应服务           |
+| OpenAI 兼容    | 请求地址 / API Key / 模型                | 模型翻译、自定义 Prompt 和流式结果   |
+| 必应词典       | 无需密钥                                 | 音标、释义、词形和例句               |
+| ECDict（在线） | 无需密钥                                 | 中英文词条查询                       |
+| 剑桥词典       | 无需密钥                                 | 英文单词的英中释义                   |
 
 ### 文字识别
 
-| 服务         | 配置方式                | 说明                                             |
-| ------------ | ----------------------- | ------------------------------------------------ |
-| 系统 OCR     | 免配置                  | 调用 Windows `Windows.Media.Ocr`，在本机离线识别 |
-| 视觉模型 OCR | 请求地址、API Key、模型 | 通过 OpenAI 兼容接口调用支持图片输入的视觉模型   |
+| 服务         | 需要配置                                       | 数据处理方式           |
+| ------------ | ---------------------------------------------- | ---------------------- |
+| 系统 OCR     | 安装对应的 Windows OCR 语言功能                | 图片在本机处理         |
+| 视觉模型 OCR | OpenAI 兼容端点 / API Key / 支持图片输入的模型 | 将图片发送到配置的端点 |
 
-视觉模型 OCR 支持流式输出，并可限制发送图片的长边尺寸。系统 OCR 需要系统安装对应的 Windows OCR 语言包。
+**接入模型服务：** 在“服务”中添加 OpenAI 兼容翻译或视觉模型 OCR，选择服务商预设或填写自定义地址，输入 API Key，再选择或填写模型。地址应对应 Chat Completions 接口；模型列表功能还需要端点支持 `/models`。OCR 模型必须支持图片输入，不能只看它是否出现在模型列表中。
 
-## 快速开始
+模型服务支持自定义请求参数和流式开关。视觉 OCR 还可限制发送图片的长边尺寸；翻译 Prompt 可自行调整，应用会补充保留 Markdown 结构的规则，但这不保证模型一定输出有效语法。
 
-### 安装
+**保存服务：** 有连通性测试的配置会先测试再保存。测试阶段可以取消；实际写入期间会显示保存状态并禁止关闭。未保存修改在关闭前需要确认，删除服务也需要确认；每类服务至少保留一个。
 
-从本仓库的 Releases 或 GitHub Actions 构建产物中获取 NSIS 安装包。安装包面向 Windows，不提供 macOS 或 Linux 版本。
+## 使用边界与隐私
 
-> [!IMPORTANT]
-> 如果此前安装过上游 `pot-desktop`，建议先在“应用和功能”中卸载旧版，再安装 `pot-simplify`。可执行文件名为 `pot-simplify.exe`。
+### 功能边界
 
-### 首次配置
+-   **Windows 专用**：不提供 macOS、Linux 或移动端安装包。
+-   **扫码仅限截图网址**：不包含摄像头扫码、粘贴图片扫描、批量识别或其他二维码协议。
+-   **OCR 依赖引擎**：系统 OCR 需要对应语言功能；视觉模型 OCR 需要你提供可用端点和凭据。
+-   **本地语种检测**：仅包含中、日、英检测模型，不代表翻译服务只能翻译这三种语言；其他语言的识别准确性可能受限。
+-   **精简范围**：不包含上游的服务插件系统、本地 HTTP 服务、自动更新、设置备份同步和生词本。
 
-1. 启动 `pot-simplify`，程序会打开设置窗口。
-2. 进入 **热键**，为需要的动作分配全局快捷键。所有热键默认留空，不设置就不会触发。
-3. 进入 **服务**，确认翻译与 OCR 服务。默认翻译服务为有道翻译、Google 翻译和 ECDict；默认 OCR 为系统 OCR。
-4. 如需使用大模型，添加 OpenAI 兼容翻译服务或视觉模型 OCR，填写请求地址、API Key 和模型名。
-5. 按需在 **常规** 中设置开机启动、界面语言、主题和托盘点击行为。
-6. 在 **翻译** 和 **文字识别** 中设置语言、自动复制、窗口关闭行为等选项。
+### 数据去向
 
-### 使用流程
+-   **本机识别**：系统 OCR 与二维码解码不上传截图；扫码后打开网址会让浏览器访问对应网站。
+-   **在线服务**：在线翻译发送文本，视觉模型 OCR 发送图片，接收方是你配置的服务商。数据处理与费用由对应服务商决定。
+-   **配置凭据**：API Key 保存在本机配置文件中，并在请求时发送给对应端点。不要公开配置文件，也不要将真实凭据提交到 Git。
+-   **剪贴板监听**：默认关闭。开启后复制文本会触发翻译，处理敏感信息时请关闭。
+-   **日志与缓存**：截图会写入缓存，日志可能包含二维码网址等内容。共享排错资料前请脱敏。
 
-1. 选中文字后按“划词翻译”热键，等待翻译窗口出现。
-2. 按“截图 OCR”或“截图翻译”热键，拖动鼠标框选屏幕区域。
-3. 按“识别二维码”热键，框选完整二维码；识别到网址后会复制到剪贴板并打开浏览器。
-4. 也可以右键单击托盘图标，从菜单进入翻译、OCR、二维码识别或设置。
-
-## 热键与托盘
-
-| 动作       | 默认行为                             |
-| ---------- | ------------------------------------ |
-| 划词翻译   | 读取当前选中文字并打开翻译窗口       |
-| 输入翻译   | 打开空白翻译窗口                     |
-| 文字识别   | 截图框选后进行 OCR                   |
-| 截图翻译   | 截图框选后 OCR，并把结果送入翻译窗口 |
-| 识别二维码 | 截图框选后本地解码二维码网址         |
-
-托盘菜单还提供输入翻译、剪贴板监听开关、自动复制模式、文字识别、截图翻译、识别二维码、偏好设置、查看日志、重启和退出。
-
-## 隐私与数据
-
--   **系统 OCR**：图片由 Windows 本机 OCR 引擎处理，不上传网络。
--   **二维码识别**：使用本地 Rust 解码，不上传截图。
--   **在线翻译和视觉模型 OCR**：待翻译文本或截图会发送到你在设置中配置的第三方服务，具体数据处理方式取决于对应服务商。
--   **API Key 与配置**：保存在本机配置文件中；调用对应服务时，API Key 会作为鉴权信息发送给你配置的服务商。
-
-数据目录：
-
-| 内容         | 路径                                                                 |
+| 内容         | Windows 路径或入口                                                   |
 | ------------ | -------------------------------------------------------------------- |
 | 配置文件     | `%APPDATA%\com.pot-app.desktop\config.json`                          |
-| 日志目录     | 可在托盘菜单选择“查看日志”打开                                       |
-| 截图缓存     | `%LOCALAPPDATA%\com.pot-app.desktop\pot_simplify_screenshot.png`     |
-| 裁剪后的截图 | `%LOCALAPPDATA%\com.pot-app.desktop\pot_simplify_screenshot_cut.png` |
+| 原始截图缓存 | `%LOCALAPPDATA%\com.pot-app.desktop\pot_simplify_screenshot.png`     |
+| 裁剪截图缓存 | `%LOCALAPPDATA%\com.pot-app.desktop\pot_simplify_screenshot_cut.png` |
+| 日志         | 托盘菜单 → 查看日志                                                  |
 
-> [!NOTE]
-> bundle identifier 仍为 `com.pot-app.desktop`，以便继续读取旧版配置、热键和 API Key。修改该标识会改变配置目录，导致历史设置无法自动继承。
+应用继续使用 `com.pot-app.desktop` 标识，以便读取旧配置。二次开发时随意修改该标识会改变配置与缓存目录，不能再自动继承原来的设置。
 
-## 开发与构建
+---
 
-### 环境要求
+## 开发与验证
 
--   Windows 10 / 11
--   Node.js 18 或更高版本（推荐使用仓库 `.node-version` 指定的 22）
--   pnpm 9 或更高版本
--   Rust 1.85.1 或更高版本
--   Visual Studio MSVC C++ 构建工具链
--   WebView2 Runtime
+本项目使用 **Tauri 1 + Rust + React 18 + Vite 5**。桌面功能依赖 Tauri 原生接口，不是运行一个网页就能完整验证的应用。
 
-### 安装依赖
+### 准备环境
+
+在 Windows 上先安装以下工具；系统依赖的安装方式见 [Tauri 1 环境准备](https://v1.tauri.app/v1/guides/getting-started/prerequisites/)。
+
+-   Git。
+-   Node.js 22，与 `.node-version` 和 CI 保持一致。
+-   Rust stable，使用 MSVC 工具链。
+-   Visual Studio C++ Build Tools，勾选“使用 C++ 的桌面开发”，安装 Windows SDK。
+-   [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
+
+### 获取代码并运行
+
+以下命令在 PowerShell 中执行：
 
 ```powershell
-pnpm install
-```
-
-### 开发调试
-
-```powershell
-# 启动 Vite 前端和 Tauri 桌面容器
+npm install --global pnpm@9
+git clone https://github.com/Dean-op/pot-simplify.git
+cd pot-simplify
+pnpm install --frozen-lockfile
 pnpm tauri dev
-
-# 只启动前端开发服务器
-pnpm dev
 ```
 
-### 检查与测试
+`pnpm tauri dev` 会同时启动 Vite 和真实 Tauri 桌面窗口。`pnpm dev` 只启动前端服务器，可用于局部页面开发，但不能替代快捷键、托盘、截图、系统 OCR、存储等桌面功能的验收。
+
+开发实例默认使用同一配置标识。调试会接触已有配置；需要隔离测试时应使用独立标识与端口，做法见 [服务设置验收记录](docs/service-settings-3.2.1.md)。
+
+### 检查与打包
 
 ```powershell
-# Markdown 渲染、安全边界和流式翻译回归测试
+pnpm check:version
 pnpm test
-
-# 前端生产构建
-pnpm build
-
-# Rust 编译检查
-cargo check --manifest-path src-tauri/Cargo.toml
-
-# Rust 单元测试（包含二维码解码与 URL 校验）
 cargo test --manifest-path src-tauri/Cargo.toml --locked
-
-# 安装锁定依赖、运行前端/Rust 测试并构建前端
-.\.scripts\verify.ps1
-
-# 额外执行 NSIS 打包
-.\.scripts\verify.ps1 -Full
+pnpm build
+pnpm tauri build -b nsis
 ```
 
-### 打包
+-   `check:version` 校验四处版本号是否一致。
+-   `test` 覆盖 Markdown 渲染与安全边界、流式翻译、服务配置异步流程、版本检查和构建资产下载器。
+-   `cargo test` 覆盖二维码解码与 HTTP/HTTPS 网址校验。
+-   `build` 只构建前端；`tauri build` 才生成 Windows 安装包。
 
-```powershell
-pnpm tauri build
-```
+本机 NSIS 输出目录为 `src-tauri/target/release/bundle/nsis/`。也可用 `.scripts/verify.ps1` 一次执行依赖安装、前端测试与构建、Rust 测试；添加 `-Full` 会额外打包，日志写入 `verify-output.log`。
 
-NSIS 安装包输出到：
+功能修改后除自动化检查外，还应在真实 Tauri/WebView2 窗口中操作验证。已有记录：[Markdown 验收](docs/markdown-verification.md)、[服务设置验收](docs/service-settings-verification.md)、[服务设置后续修复与发布](docs/service-settings-3.2.1.md)。
 
-```text
-src-tauri/target/release/bundle/nsis/
-```
+## 版本与发布
 
-发布版本时同步更新 `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` 和 `CHANGELOG.md`，然后提交并创建 `vX.Y.Z` 标签。GitHub Actions 会校验版本一致性，先执行测试，再构建 x64、x86、ARM64 的普通版与内置 WebView2 版；全部六个安装包构建成功后才创建 Release。
+二次开发按 [语义化版本](https://semver.org/lang/zh-CN/) 管理：修复用补丁版本，兼容的新功能用次版本，不兼容变更用主版本。
+
+发布前同步更新以下四处版本号，并维护 [CHANGELOG.md](CHANGELOG.md)：
+
+-   `package.json`
+-   `src-tauri/tauri.conf.json`
+-   `src-tauri/Cargo.toml`
+-   `src-tauri/Cargo.lock` 中 `pot-simplify` 包的版本
+
+运行 `pnpm check:version` 和相关检查后，使用中文 Conventional Commits 提交，例如 `fix(service): 修复服务保存行为`。提交推送后创建并推送对应的 `vX.Y.Z` 标签；**不移动或覆盖已有发布标签**。仅修改文档无需提升应用版本。
+
+[GitHub Actions](.github/workflows/package.yml) 的发布流程：
+
+-   **master 推送**：执行回归检查，不生成安装包。
+-   **版本标签**：校验版本，构建三种架构的普通版与固定运行时版，共六个安装包；全部成功后发布 Release。
+-   **手动触发**：留空 `release_tag` 时仅打包；填写已有标签时，从原标签检出应用源码，使用当前工作流重新构建并发布，不改写原标签。
 
 ## 常见问题
 
-### 启动后没有窗口
+### 窗口关了，程序还在运行？
 
-程序默认常驻托盘。检查任务栏通知区域中的 `pot-simplify` 图标，左键单击或从菜单打开偏好设置。若图标被折叠，请在 Windows 托盘设置中将其设为常驻显示。
+这是托盘常驻行为。点击托盘图标可重新打开设置；完全退出请使用托盘菜单的“退出”。托盘图标可能藏在通知区域的折叠菜单中。
 
-### 提示 WebView2 缺失或界面空白
+### 热键没有反应？
 
-安装 Microsoft Edge WebView2 Runtime，或使用 GitHub Actions 中带 `fix_webview2_runtime` 的安装包。
+默认没有热键。先到“热键”页面设置并保存，检查是否与其他程序冲突；可先通过托盘菜单确认对应功能能否正常运行。
 
-### 全局热键没有反应
+### 界面空白或提示缺少 WebView2？
 
-确认热键已在“设置 → 热键”中保存，且没有被其他程序占用。修改热键后建议重启应用再测试。
+安装 WebView2 Runtime，再重新启动应用。无法联网安装时，可选择文件名包含 `fix_webview2_runtime` 的包。若仍失败，从托盘打开日志查看具体错误。
 
-### 系统 OCR 提示语言包未安装
+### 系统 OCR 提示语言不可用？
 
-在 Windows 的“设置 → 时间和语言 → 语言和区域”中安装对应语言的 OCR 语言功能，或改用视觉模型 OCR。
+在 Windows“设置 → 时间和语言”中，为目标语言安装 OCR 功能；只有显示语言包不一定包含 OCR。也可以改用支持该语言的视觉模型 OCR。
 
-### 视觉模型 OCR 请求失败
+### 模型列表或翻译、OCR 请求失败？
 
-确认端点兼容 OpenAI Chat Completions、模型支持图片输入、API Key 有效。若网关不支持流式输出，关闭流式开关后重试。
+检查请求地址、API Key 和模型权限。拉取模型需要 `/models`，翻译需要 Chat Completions，OCR 还需要模型支持图片输入；三者不能相互替代。网关不支持流式输出时可关闭流式重试。保存阶段使用的是测试文本或内置 OCR 测试图片，不会为了测试自动上传你的屏幕截图。
 
-### 二维码识别不到
+### Markdown 译文仍不好读？
 
-框选范围要包含二维码本体和四周留白，避免截断、强反光或过度模糊。当前只接受 `http://` 和 `https://` 网址；纯文本、`mailto:` 等其他二维码内容会提示“不是网址”。
+使用译文底部的预览/源码切换按钮查看结果。翻译 Markdown 时请关闭“翻译 → 自动删除换行”，避免在请求前破坏段落结构；服务返回的语法仍可能不完整。预览支持 Markdown 与 GFM，但不执行原始 HTML、不加载图片，只允许点击绝对 HTTP/HTTPS 链接。
 
-### Markdown 译文格式不正确
+### 二维码没有识别到？
 
-译文默认显示 Markdown 预览，底部的源码按钮可查看原始结果。翻译 Markdown 时请关闭“翻译设置 → 自动删除换行”，并使用能保留格式的翻译服务。OpenAI 兼容服务会在请求中附加保留 Markdown 结构、代码和链接地址的规则，但模型仍可能输出无效语法。预览不执行 HTML、不加载图片；链接只支持 HTTP/HTTPS。
+框选时包含完整二维码及四周留白，避免截断或模糊。纯文本、`mailto:` 等内容会提示不是网址，本功能只处理 HTTP/HTTPS 链接。
 
-## 已知边界
+### GitHub 安装包下载返回 5xx？
 
--   仅支持 Windows，不提供 macOS、Linux 或移动端构建。
--   二维码识别只支持截图框选，不包含摄像头扫码、粘贴图片识别和批量图片扫描。
--   二维码解码结果只打开 HTTP/HTTPS 网址，不执行其他协议或任意命令。
--   系统 OCR 依赖 Windows 已安装的 OCR 语言包。
--   视觉模型 OCR 需要用户自行提供兼容的端点和凭据。
--   本项目不包含上游的插件系统、本地 HTTP 服务、自动更新、设置备份同步和生词本。
+先检查网络与 [构建记录](https://github.com/Dean-op/pot-simplify/actions)。服务端下载失败不代表本地服务配置有问题。也可登录 GitHub，在成功的打包任务中下载 `windows_*` 安装包产物；下载 ZIP 后解压，再运行其中的 `setup.exe`。
 
-## 许可证与致谢
+## 上游与许可证
 
-本项目使用 [GPL-3.0](LICENSE) 许可证，并继承上游项目的许可要求。
+本项目 Fork 自 [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop) v3.0.7，感谢上游作者与贡献者。本分支面向 Windows 精简和二次开发，不是上游官方发行版。
 
--   [pot-app/pot-desktop](https://github.com/pot-app/pot-desktop)：本项目上游
--   [Tauri](https://github.com/tauri-apps/tauri)：桌面应用框架
--   [lingua-rs](https://github.com/pemistahl/lingua-rs)：本地语种检测
--   [rqrr](https://github.com/WanzenBug/rqrr)：本地二维码解码
--   [Bob](https://github.com/ripperhe/Bob)：交互设计灵感来源
+使用 [GPL-3.0-only](LICENSE) 许可证。修改或分发时须遵守 GPLv3 的相应要求，并保留上游许可与归属信息。
+
+主要依赖：[Tauri](https://github.com/tauri-apps/tauri)、[React](https://github.com/facebook/react)、[lingua-rs](https://github.com/pemistahl/lingua-rs)、[rqrr](https://github.com/WanzenBug/rqrr)、[react-markdown](https://github.com/remarkjs/react-markdown) 与 [remark-gfm](https://github.com/remarkjs/remark-gfm)。
